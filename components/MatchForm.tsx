@@ -1,23 +1,41 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import CreatableSelect from 'react-select/creatable';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import Select from 'react-select';
+import { setValue } from '@/utlis/reactSelect';
+import { saveNote, updateNote } from '@/utlis/storage/notes';
 
-function MatchForm({
+function MatchForm(props: MatchFormProps) {
 
-}) {
+    const pickTypeOptions = [
+        { value: '1x2', label: '1x2' },
+        { value: 'OU', label: 'Over/Under' },
+    ]
 
-    const defaultOptions = [
+    const winnerOptions = [
         { value: 'Home', label: 'Home' },
         { value: 'Away', label: 'Away' },
         { value: 'Draw', label: 'Draw' }
     ];
 
+    const overUnderOptions = [
+        { value: 'ov1', label: "Over 2.5"},
+        { value: 'ov2', label: "Over 3.5" },
+        { value: 'ov3', label: "Over 4.5" },
+        { value: 'un1', label: "Under 2.5"},
+        { value: 'un2', label: "Under 3.5" },
+        { value: 'un3', label: "Under 4.5" },
+    ];
+
+    const [ defaultOptions, setDefaultOptions ] = useState<{value: string, label: string}[]>([])
+
     const [ pickForm, setPickForm ] = useState<MatchNotes>({
         _id: null,
         title: "",
+        pickType: "",
         pick: "",
         confidence: 10,
         reason: {
@@ -25,9 +43,11 @@ function MatchForm({
             id: ""
         },
         kickOffTime: new Date(),
+        pickResult: null,
         result: "",
+        reflection: "",
         user: null,
-        createdDate: null
+        createdDate: new Date()
     })
 
     const onChange = (e : any) => {
@@ -37,118 +57,221 @@ function MatchForm({
         }))
     }
 
+    useEffect(() => {
+        if (!props.data) { return; }
+        console.log(props.data)
+        setPickForm(prev => ({
+            ...prev,
+            ...props.data
+        }))
+    }, [props.data])
+
+    useEffect(() => {
+        if (pickForm.pickType && pickForm.pickType == '1x2') {
+            setDefaultOptions(winnerOptions)
+        }
+        if (pickForm.pickType && pickForm.pickType == 'OU') {
+            setDefaultOptions(overUnderOptions)
+        }
+    }, [pickForm]) // eslint-disable-next-line react-hooks/exhaustive-deps
+
     const submitForm = async () => {
-        let form = {
+        const form = {
             ...pickForm,
+            _id: pickForm._id ? pickForm._id : Date.now().toString(),
             kickOffTime: pickForm.kickOffTime ? new Date(pickForm.kickOffTime).toISOString() : new Date()
         }
-        console.log(pickForm)
+        if (pickForm._id) { 
+            updateNote(form) 
+            window.location.reload()
+        } else { 
+            saveNote(form) 
+            window.location.reload()
+        }
     }
 
     return (
-        <form className="w-full max-w-lg">
-            <div className="flex flex-wrap -mx-3 mb-6">
-                <div className="w-full px-3">
-                    <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="grid-password">
-                        Match Title
-                    </label>
-                    <input className="appearance-none block w-full text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" 
-                        onChange={(e) => { onChange({title: e.currentTarget.value}) }}
-                        id="grid-password" type="text" placeholder="Manchester United vs Tottenham"/>
-                </div>
-            </div>
-            <div className="flex flex-wrap -mx-3 mb-6">
-                <div className="w-full px-3 mb-6 md:mb-0">
-                    <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="grid-password">
-                        Pick
-                    </label>
-                    <div className="w-full">
-                        <CreatableSelect
-                            isClearable
-                            options={defaultOptions}
-                            onChange={(newValue : any) => onChange({pick: newValue})}
-                        />
+        <div className='w-full md:p-0'>
+            <div className={`grid ${pickForm._id ? 'grid-cols-1' : 'grid-cols-1'}`}>
+                <div className='grid gap-[16px]'>
+                    <div>
+                        <div className="w-full">
+                            <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold" htmlFor="grid-password">
+                                Match Title
+                            </label>
+                            <input className="appearance-none block w-full text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" 
+                                value={pickForm.title} onChange={(e) => { onChange({title: e.currentTarget.value}) }} type="text" placeholder="Manchester United vs Tottenham"/>
+                        </div>
+                    </div>
+                    <div>
+                        <div className="w-full md:mb-0">
+                            <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold" htmlFor="grid-password">
+                                Kick Off Time
+                            </label>
+                            <DatePicker
+                                className="h-full w-full resize-none rounded-md border border-gray-200 bg-transparent px-3 py-3 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                selected={pickForm.kickOffTime}
+                                onChange={(date) => onChange({kickOffTime: date})}
+                                showTimeSelect
+                                dateFormat="YYYY-MM-dd HH:mm"
+                            />
+                            {/* <p className="text-gray-600 text-xs italic">Your confidence for your pick is {pickForm.confidence}</p> */}
+                        </div>
+                    </div>
+                    <div>
+                        <div className="w-full">
+                            <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold" htmlFor="grid-password">
+                                Pick Type
+                            </label>
+                            <div className="w-full">
+                                <Select
+                                    classNames={{
+                                        control: () => 'h-full w-full resize-none rounded-md border border-gray-200 bg-transparent px-1 py-1 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50',
+                                    }}
+                                    value={setValue(pickForm.pickType, pickTypeOptions)}
+                                    isClearable
+                                    options={pickTypeOptions}
+                                    onChange={(newValue : any) => onChange({pickType: newValue.value, pick: null})}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div className="w-full">
+                            <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold" htmlFor="grid-password">
+                                Pick
+                            </label>
+                            <div className="w-full">
+                                <CreatableSelect
+                                    classNames={{
+                                        control: () => 'h-full w-full resize-none rounded-md border border-gray-200 bg-transparent px-1 py-1 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50',
+                                    }}
+                                    value={setValue(pickForm.pick, defaultOptions)}
+                                    isClearable
+                                    options={defaultOptions}
+                                    onChange={(newValue : any) => onChange({pick: newValue.value})}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div className="w-full">
+                            <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold" htmlFor="grid-password">
+                                Confidence
+                            </label>
+                            <input
+                                type="range"
+                                min="0"
+                                max="10"
+                                value={pickForm.confidence}
+                                onChange={(e) => {
+                                    onChange({ confidence: e.currentTarget.value })
+                                }}
+                            />
+                            <p className="text-gray-600 text-xs italic">Your confidence for your pick is {pickForm.confidence}</p>
+                        </div>
+                    </div>
+                    <div>
+                        <div className="w-full">
+                            <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold" htmlFor="grid-password">
+                                Reason (EN)
+                            </label>
+                            <textarea
+                                className="h-full min-h-[100px] w-full resize-none rounded-md border border-gray-200 bg-transparent px-3 py-3 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                value={pickForm.reason.en}
+                                onChange={(e) => {
+                                    onChange({ reason: { ...pickForm.reason, en: e.currentTarget.value} })
+                                }}
+                            />
+                            {/* <p className="text-gray-600 text-xs italic">Your confidence for your pick is {pickForm.confidence}</p> */}
+                        </div>
+                    </div>
+                    <div className='-mt-4'>
+                        <div className="w-full">
+                            <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold" htmlFor="grid-password">
+                                Reason (ID)
+                            </label>
+                            <textarea
+                                className="h-full min-h-[100px] w-full resize-none rounded-md border border-gray-200 bg-transparent px-3 py-3 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                value={pickForm.reason.id}
+                                onChange={(e) => {
+                                    onChange({ reason: { ...pickForm.reason, id: e.currentTarget.value} })
+                                }}
+                            />
+                            {/* <p className="text-gray-600 text-xs italic">Your confidence for your pick is {pickForm.confidence}</p> */}
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div className="flex flex-wrap -mx-3 mb-6">
-                <div className="w-full px-3 mb-6 md:mb-0">
-                    <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="grid-password">
-                        Confidence
-                    </label>
-                    <input
-                        type="range"
-                        min="0"
-                        max="10"
-                        value={pickForm.confidence}
-                        onChange={(e) => {
-                            onChange({ confidence: e.currentTarget.value })
-                        }}
-                    />
-                    <p className="text-gray-600 text-xs italic">Your confidence for your pick is {pickForm.confidence}</p>
+                <div className='grid'>
+                    {
+                        pickForm._id &&
+                        <>
+                            <div className="w-full py-2">
+                                <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold" htmlFor="grid-password">
+                                    Pick Result
+                                </label>
+                                <Select
+                                    classNames={{
+                                        control: () => 'h-full w-full resize-none rounded-md border border-gray-200 bg-transparent px-1 py-1 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50',
+                                    }}
+                                    value={setValue(pickForm.pickResult, [
+                                        {label: 'Right', value: 'true'},
+                                        {label: 'False', value: 'false'},
+                                    ])}
+                                    isClearable
+                                    options={[
+                                        {label: 'Right', value: 'true'},
+                                        {label: 'False', value: 'false'},
+                                    ]}
+                                    onChange={(newValue : any) => onChange({pickResult: newValue.value})}
+                                />
+                            </div>
+                            <div className="min-h-[100px]">
+                                <div className="w-full">
+                                    <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold" htmlFor="grid-password">
+                                        Result
+                                    </label>
+                                    <textarea
+                                        className="h-full min-h-[100px] w-full resize-none rounded-md border border-gray-200 bg-transparent px-3 py-3 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                        value={pickForm.result}
+                                        onChange={(e) => {
+                                            onChange({ result: e.currentTarget.value })
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                            <div className="min-h-[100px]">
+                                <div className="w-full">
+                                    <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold" htmlFor="grid-password">
+                                        Reflection
+                                    </label>
+                                    <textarea
+                                        className="h-full min-h-[100px] w-full resize-none rounded-md border border-gray-200 bg-transparent px-3 py-3 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                        value={pickForm.reflection}
+                                        onChange={(e) => {
+                                            onChange({ reflection: e.currentTarget.value })
+                                        }}
+                                    />
+                                    <p className="text-gray-600 text-xs italic">Your result & reflection can be edited when the match end</p>
+                                </div>
+                            </div>
+                        </>
+                    }
                 </div>
             </div>
-            <div className="min-h-[100px] -mx-3 mb-6">
-                <div className="w-full px-3 mb-6 md:mb-0">
-                    <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="grid-password">
-                        Reason (EN)
-                    </label>
-                    <textarea
-                        className="h-full min-h-[100px] w-full resize-none rounded-md border border-blue-gray-200 bg-transparent px-3 py-3 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                        value={pickForm.reason.en}
-                        onChange={(e) => {
-                            onChange({ reason: { ...pickForm.reason, en: e.currentTarget.value} })
-                        }}
-                    />
-                    {/* <p className="text-gray-600 text-xs italic">Your confidence for your pick is {pickForm.confidence}</p> */}
-                </div>
+            <div className='align-right text-right mt-8'>
+                <button className="bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded inline-flex items-center cursor-pointer"
+                    onClick={() => submitForm()}
+                >
+                    <span>Save</span>
+                </button>
             </div>
-            <div className="min-h-[100px] -mx-3 mb-6">
-                <div className="w-full px-3 mb-6 md:mb-0">
-                    <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="grid-password">
-                        Reason (ID)
-                    </label>
-                    <textarea
-                        className="h-full min-h-[100px] w-full resize-none rounded-md border border-blue-gray-200 bg-transparent px-3 py-3 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                        value={pickForm.reason.id}
-                        onChange={(e) => {
-                            onChange({ reason: { ...pickForm.reason, id: e.currentTarget.value} })
-                        }}
-                    />
-                    {/* <p className="text-gray-600 text-xs italic">Your confidence for your pick is {pickForm.confidence}</p> */}
-                </div>
-            </div>
-            <div className="min-h-[100px] -mx-3 mb-6">
-                <div className="w-full px-3 mb-6 md:mb-0">
-                    <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="grid-password">
-                        Kick Off Time
-                    </label>
-                    <DatePicker
-                        selected={pickForm.kickOffTime}
-                        onChange={(date) => onChange({kickOffTime: date})}
-                        showTimeSelect
-                        dateFormat="Pp"
-                    />
-                    {/* <p className="text-gray-600 text-xs italic">Your confidence for your pick is {pickForm.confidence}</p> */}
-                </div>
-            </div>
-            <div className="min-h-[100px] -mx-3 mb-6">
-                <div className="w-full px-3 mb-6 md:mb-0">
-                    <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="grid-password">
-                        Result & Reflection
-                    </label>
-                    <textarea
-                        className="h-full min-h-[100px] w-full resize-none rounded-md border border-blue-gray-200 bg-transparent px-3 py-3 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                        value={pickForm.reason.id}
-                        onChange={(e) => {
-                            onChange({ reason: { ...pickForm.reason, id: e.currentTarget.value} })
-                        }}
-                    />
-                    <p className="text-gray-600 text-xs italic">Your result & reflection can be edited when the match end</p>
-                </div>
-            </div>
-        </form>
+        </div>
     )    
 }
 
 export default MatchForm
+
+interface MatchFormProps {
+    data: MatchNotes | null
+}
