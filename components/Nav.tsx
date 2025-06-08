@@ -45,7 +45,7 @@ function Nav ({
                 </div>
                 <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
                     <div className="flex shrink-0 items-center">
-                        <Image className="h-8 w-auto rounded-sm" src="/logo_.png" alt="Match Note Maker"/>
+                        <Image className="h-8 w-auto rounded-sm" src="/logo_.png" width={30} height={30} alt="Match Note Maker"/>
                     </div>
                     <div className="hidden sm:ml-6 sm:block">
                         <div className="flex space-x-4">
