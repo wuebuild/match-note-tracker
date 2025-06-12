@@ -10,6 +10,7 @@ export default function NotesHistory ({
 
 }) {
 
+    const [ isLoading, setIsLoading ] = useState(true)
     const [ editData, setEditData ] = useState<MatchNotes|null>()
     const [ openDialog, setOpenDialog ] = useState(false)
     const [ matchNotes, setMatchNotes ] = useState<MatchNotes[]>([])
@@ -20,6 +21,7 @@ export default function NotesHistory ({
         const data = await loadNotes()
         console.log('here data info', data)
         if (data) { setMatchNotes(data) }
+        setIsLoading(false)
     }
 
     useEffect(() => {
@@ -32,10 +34,10 @@ export default function NotesHistory ({
                 <div className="font-bold text-[24px]">My Notes</div>
                 <div onClick={() => {
                     setOpenDialog(true)
-                }}><button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-[10px] font-bold">Create Notes</button></div>
+                }}><button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-[12px] font-bold">Create Notes</button></div>
             </div>
             {
-                matchNotes.length == 0 &&
+                (!isLoading && matchNotes.length == 0) &&
                 <div className="text-center w-full h-full mt-32">
                     <Image className="mx-auto my-auto" src={"/placeholder.png"} width={80} height={80} alt={"placeholder"} />
                     <div>Notes is empty</div>

@@ -68,7 +68,7 @@ function MatchCard (props: MatchCardProps) {
                     <div className="text-right">
                         <button
                             onClick={() => { onClick() }}
-                            className="bg-yellow-400 text-white px-4 py-2 rounded hover:bg-yellow-500 text-[10px] font-bold"
+                            className="bg-yellow-400 text-white px-4 py-2 rounded hover:bg-yellow-500 text-[12px] font-bold"
                         >Edit</button>
                     </div>
                     <div className="text-right">
@@ -77,7 +77,7 @@ function MatchCard (props: MatchCardProps) {
                                 navigator.clipboard.writeText(generatedPost);
                                 alert("Copied to clipboard!");
                             }}
-                            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-[10px] font-bold"
+                            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-[12px] font-bold"
                         >Copy</button>
                     </div>
                     {/* <div className="text-right">

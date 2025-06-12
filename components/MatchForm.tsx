@@ -31,6 +31,7 @@ function MatchForm(props: MatchFormProps) {
     ];
 
     const [ defaultOptions, setDefaultOptions ] = useState<{value: string, label: string}[]>([])
+    // let defaultOptions : {value: string, label: string}[] = []
 
     const [ pickForm, setPickForm ] = useState<MatchNotes>({
         _id: null,
@@ -69,11 +70,13 @@ function MatchForm(props: MatchFormProps) {
     useEffect(() => {
         if (pickForm.pickType && pickForm.pickType == '1x2') {
             setDefaultOptions(winnerOptions)
+            // defaultOptions = winnerOptions
         }
         if (pickForm.pickType && pickForm.pickType == 'OU') {
             setDefaultOptions(overUnderOptions)
+            // defaultOptions = overUnderOptions
         }
-    }, [pickForm]) // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pickForm, winnerOptions, overUnderOptions]) // eslint-disable-next-line react-hooks/exhaustive-deps
 
     const submitForm = async () => {
         const form = {
