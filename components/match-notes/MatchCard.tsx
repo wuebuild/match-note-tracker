@@ -1,3 +1,4 @@
+'use client';
 import moment from "moment";
 import Card from "../tailwind/Card"
 import { timeConverter } from "@/utlis/time/time";
@@ -5,7 +6,7 @@ import DialogComponent from "../tailwind/DialogComponent";
 import { useState } from "react";
 import { pickResultColor, pickResulTitle } from "@/utlis/pickResult";
 import DeleteForm from "./DeleteForm";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 function MatchCard (props: MatchCardProps) {
     const { info, onClick } = props
