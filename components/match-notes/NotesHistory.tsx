@@ -1,10 +1,11 @@
 'use client'
-import MatchCard from "@/components/MatchCard"
+import MatchCard from "@/components/match-notes/MatchCard"
 import { loadNotes } from "@/utlis/storage/notes"
 import { useEffect, useState } from "react"
-import MatchForm from "@/components/MatchForm";
+import MatchForm from "@/components/match-notes/MatchForm";
 import DialogComponent from "../tailwind/DialogComponent";
 import Image from "next/image";
+import { loadListNotes } from "@/service/notesService";
 
 export default function NotesHistory ({
 
@@ -18,9 +19,14 @@ export default function NotesHistory ({
     useEffect(() => { loadMyMatchNotes() }, [])
 
     const loadMyMatchNotes = async () => {
-        const data = await loadNotes()
-        console.log('here data info', data)
-        if (data) { setMatchNotes(data) }
+        const session = localStorage.getItem('mgm_access_token')
+        if (session) { 
+            let data = await loadListNotes()
+            if (data) { setMatchNotes(data.data) }
+        } else {
+            const data = await loadNotes()
+            if (data) { setMatchNotes(data) }
+        }
         setIsLoading(false)
     }
 

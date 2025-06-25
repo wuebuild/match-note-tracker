@@ -1,8 +1,9 @@
 import moment from "moment";
-import Card from "./tailwind/Card"
+import Card from "../tailwind/Card"
 import { timeConverter } from "@/utlis/time/time";
-import DialogComponent from "./tailwind/DialogComponent";
+import DialogComponent from "../tailwind/DialogComponent";
 import { useState } from "react";
+import { pickResultColor, pickResulTitle } from "@/utlis/pickResult";
 
 function MatchCard (props: MatchCardProps) {
     const { info, onClick } = props
@@ -28,12 +29,8 @@ function MatchCard (props: MatchCardProps) {
                         <div className="text-[8px]">posted: {`${moment(info.createdDate).format('YYYY-MM-DD HH:mm')}`}</div>
                         {
                             (info.pickResult != null && info.pickResult != undefined) &&
-                            <div className={`absolute right-[-70px] top-[0px] w-[150px] transform -rotate-320 text-center font-bold text-white text-[10px] py-1`}
-                                style={{
-                                    background: `${info.pickResult == 'true' ? 'green' : info.pickResult == 'false' ? 'red' : 'grey'}`
-                                }}
-                            >
-                                {info.pickResult == 'true' ? 'Win' : info.pickResult == 'false' ? 'Lose' : 'TBD'}
+                            <div className={`absolute right-[-70px] top-[0px] w-[150px] transform -rotate-320 text-center font-bold text-white text-[10px] py-1 ${pickResultColor(info)}`}>
+                                {pickResulTitle(info)}
                             </div>
                         }
                     </div>
@@ -45,11 +42,11 @@ function MatchCard (props: MatchCardProps) {
                     </div>
                     <div className="grid grid-cols-2 mt-4">
                         <div>
-                            <div className="text-gray-500 text-[12px]">Writer Pick:</div>
+                            <div className="text-gray-500 text-[12px]">Analyst Pick:</div>
                             <div className="font-bold text-[16px]">{info.pickType} {info.pick}</div>
                         </div>
                         <div>
-                            <div className="text-gray-500 text-[12px]">Writer Confidence:</div>
+                            <div className="text-gray-500 text-[12px]">Analyst Confidence:</div>
                             <div className="font-bold text-[16px]">{info.confidence}</div>  
                         </div>
                     </div>
@@ -61,7 +58,7 @@ function MatchCard (props: MatchCardProps) {
                 </div>
                 <div>
                     <div className="text-center text-[12px] cursor-pointer underline" onClick={() => {
-                        setOpenDialog(true)
+                        window.location.href = `/notes/${info.id || info._id}`
                     }}>Read more</div>
                 </div>
                 <div className="flex gap-2 mt-4 justify-end">
@@ -108,11 +105,11 @@ function MatchCard (props: MatchCardProps) {
                 </div>
                 <div className="grid grid-cols-2 mt-4">
                     <div>
-                        <div className="text-gray-500 text-[12px]">Writer Pick:</div>
+                        <div className="text-gray-500 text-[12px]">Analyst Pick:</div>
                         <div className="font-bold text-[16px]">{info.pickType} {info.pick}</div>
                     </div>
                     <div>
-                        <div className="text-gray-500 text-[12px]">Writer Confidence:</div>
+                        <div className="text-gray-500 text-[12px]">Analyst Confidence:</div>
                         <div className="font-bold text-[16px]">{info.confidence}</div>  
                     </div>
                 </div>

@@ -15,6 +15,7 @@ export const saveNote = (data : any) => {
       createdDate: new Date()
     }] }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(currData));
+    window.location.reload()
   } else {
     // next version: send to backend API
   }
@@ -29,12 +30,18 @@ export const loadNotes = () => {
   }) : null
 }
 
+export const loadNote = (_id: string) => {
+  let datas = localStorage.getItem(STORAGE_KEY)
+  return datas ? JSON.parse(datas).filter((v : any) => v._id == _id)[0] : null
+}
+
 export function updateNote(updatedNote: any) {
   const notes = loadNotes();
   const updated = notes.map((note: MatchNotes) =>
     note._id === updatedNote._id ? updatedNote : note
   );
   localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  window.location.reload()
 }
 
 export function clearStorage() {

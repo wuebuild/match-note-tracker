@@ -47,7 +47,7 @@ function Footer ({
                   href="#"
                   className="text-slate-700 hover:text-slate-500 focus:text-slate-500 text-sm"
                 >
-                  v 1.0.0
+                  v 1.1.0
                 </a>
               </li>
             </ul>

@@ -30,7 +30,7 @@ export default function Home() {
           </section>
 
           <section className="text-center mb-12">
-            <a href="/history" className="inline-block bg-black text-white px-6 py-3 rounded-xl hover:bg-gray-800 transition">
+            <a href="/notes" className="inline-block bg-black text-white px-6 py-3 rounded-xl hover:bg-gray-800 transition">
               Start Using the Tool
             </a>
           </section>

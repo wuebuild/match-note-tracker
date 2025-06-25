@@ -7,12 +7,13 @@ import "react-datepicker/dist/react-datepicker.css";
 import Select from 'react-select';
 import { setValue } from '@/utlis/reactSelect';
 import { saveNote, updateNote } from '@/utlis/storage/notes';
+import { createNotes, updateNotes } from '@/service/notesService';
 
 function MatchForm(props: MatchFormProps) {
 
     const pickTypeOptions = [
-        { value: '1x2', label: '1x2' },
-        { value: 'OU', label: 'Over/Under' },
+        { value: 1, label: '1x2' },
+        { value: 2, label: 'Over/Under' },
     ]
 
     const winnerOptions = [
@@ -34,21 +35,26 @@ function MatchForm(props: MatchFormProps) {
     // let defaultOptions : {value: string, label: string}[] = []
 
     const [ pickForm, setPickForm ] = useState<MatchNotes>({
+        id: null,
         _id: null,
         title: "",
+        pickTypeId: "",
         pickType: "",
         pick: "",
+        pickInfo: "",
         confidence: 10,
         reason: {
+            id: "",
             en: "",
-            id: ""
+            idn: ""
         },
         kickOffTime: new Date(),
         pickResult: null,
         result: "",
         reflection: "",
         user: null,
-        createdDate: new Date()
+        createdDate: new Date(),
+        isSynced: false
     })
 
     const onChange = (e : any) => {
@@ -60,7 +66,6 @@ function MatchForm(props: MatchFormProps) {
 
     useEffect(() => {
         if (!props.data) { return; }
-        console.log(props.data)
         setPickForm(prev => ({
             ...prev,
             ...props.data
@@ -68,34 +73,36 @@ function MatchForm(props: MatchFormProps) {
     }, [props.data])
 
     useEffect(() => {
-        if (pickForm.pickType && pickForm.pickType == '1x2') {
-            setDefaultOptions(winnerOptions)
-            // defaultOptions = winnerOptions
+        if (pickForm.pickTypeId == '1') {
+            setDefaultOptions(winnerOptions);
+        } else if (pickForm.pickTypeId == '2') {
+            setDefaultOptions(overUnderOptions);
+        } else {
+            setDefaultOptions([]);
         }
-        if (pickForm.pickType && pickForm.pickType == 'OU') {
-            setDefaultOptions(overUnderOptions)
-            // defaultOptions = overUnderOptions
-        }
-    }, [pickForm, winnerOptions, overUnderOptions]) // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pickForm.pickTypeId]) // eslint-disable-next-line react-hooks/exhaustive-deps
 
     const submitForm = async () => {
         const form = {
             ...pickForm,
-            _id: pickForm._id ? pickForm._id : Date.now().toString(),
             kickOffTime: pickForm.kickOffTime ? new Date(pickForm.kickOffTime).toISOString() : new Date()
         }
-        if (pickForm._id) { 
-            updateNote(form) 
-            window.location.reload()
+        const session = localStorage.getItem('mgm_access_token')
+        if (pickForm.id || pickForm._id) { 
+            if (session)  { 
+                await updateNotes(form)
+            } else { updateNote(form)  }
+            // window.location.reload()
         } else { 
-            saveNote(form) 
-            window.location.reload()
+            if (session) {
+                await createNotes(form)
+            } else { saveNote(form) }
         }
     }
 
     return (
         <div className='w-full md:p-0'>
-            <div className={`grid ${pickForm._id ? 'grid-cols-1' : 'grid-cols-1'}`}>
+            <div className={`grid ${(pickForm.id || pickForm._id) ? 'grid-cols-1' : 'grid-cols-1'}`}>
                 <div className='grid gap-[16px]'>
                     <div>
                         <div className="w-full">
@@ -131,10 +138,10 @@ function MatchForm(props: MatchFormProps) {
                                     classNames={{
                                         control: () => 'h-full w-full resize-none rounded-md border border-gray-200 bg-transparent px-1 py-1 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50',
                                     }}
-                                    value={setValue(pickForm.pickType, pickTypeOptions)}
+                                    value={setValue(pickForm.pickTypeId, pickTypeOptions)}
                                     isClearable
                                     options={pickTypeOptions}
-                                    onChange={(newValue : any) => onChange({pickType: newValue.value, pick: null})}
+                                    onChange={(newValue : any) => onChange({pickTypeId: newValue.value, pickType: newValue.label, pick: null, pickInfo: null})}
                                 />
                             </div>
                         </div>
@@ -152,7 +159,7 @@ function MatchForm(props: MatchFormProps) {
                                     value={setValue(pickForm.pick, defaultOptions)}
                                     isClearable
                                     options={defaultOptions}
-                                    onChange={(newValue : any) => onChange({pick: newValue.value})}
+                                    onChange={(newValue : any) => onChange({pickInfo: newValue.value, pick: newValue.label})}
                                 />
                             </div>
                         </div>
@@ -207,7 +214,7 @@ function MatchForm(props: MatchFormProps) {
                 </div>
                 <div className='grid'>
                     {
-                        pickForm._id &&
+                        (pickForm.id || pickForm._id) &&
                         <>
                             <div className="w-full py-2">
                                 <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold" htmlFor="grid-password">

@@ -1,18 +1,27 @@
 'use client'
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 
-import { signOut, useSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
+import DialogComponent from "../tailwind/DialogComponent";
+import Auth from "../auth";
 
 function Nav ({
 
 }) {
 
     const [ isOpenMenu, setIsOpenMenu ] = useState(false)
+    const [ openDialog, setOpenDialog ] = useState(false)
+    const [ session, setSession ] = useState<string | null>(null);
     const pathName = usePathname()
-    const { data: session } = useSession();
+    
+
+    useEffect(() => {
+        let accessToken = localStorage.getItem('mgm_access_token')
+        setSession(accessToken)
+    }, [])
 
     const checkPath = (path: any) => {
         return pathName == path ? `rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white` : `rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white`
@@ -53,7 +62,7 @@ function Nav ({
                     <div className="hidden sm:ml-6 sm:block">
                         <div className="flex space-x-4">
                             <Link href="/" className={checkPath('/')} aria-current="page">Dashboard</Link>
-                            <Link href="/history" className={checkPath('/history')}>Match Notes</Link>
+                            <Link href="/notes" className={checkPath('/notes')}>Match Notes</Link>
                         </div>
                     </div>
                 </div>
@@ -71,14 +80,15 @@ function Nav ({
                                 !session ?
                                 <button type="button" className="relative bg-green-800 px-4 py-2 flex rounded-[10px] text-sm focus:ring-1 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden text-white cursor-pointer" id="user-menu-button" aria-expanded="false" aria-haspopup="true"
                                     onClick={() => {
-                                        window.location.href = '/auth/login'                                        
+                                        // window.location.href = '/auth/login'       
+                                        setOpenDialog(true)                                 
                                     }}
                                 >
                                     Sign In
                                 </button>
                                 :
                                 <button type="button" className="relative bg-green-800 px-4 py-2 flex rounded-[10px] text-sm focus:ring-1 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden text-white cursor-pointer" id="user-menu-button" aria-expanded="false" aria-haspopup="true"
-                                    onClick={() => { signOut() }}
+                                    onClick={() => { signOut(); localStorage.clear() }}
                                 >
                                     Sign Out
                                 </button>
@@ -93,10 +103,13 @@ function Nav ({
                 <div className="sm:hidden" id="mobile-menu">
                     <div className="space-y-1 px-2 pt-2 pb-3">
                     <Link href="/" className={checkPathMobile('/')} aria-current="page">Dashboard</Link>
-                    <Link href="/history" className={checkPathMobile('/history')}>Match Notes</Link>
+                    <Link href="/notes" className={checkPathMobile('/notes')}>Match Notes</Link>
                     </div>
                 </div>
             }
+            <DialogComponent open={openDialog} setOpenDialog={() => { setOpenDialog(!openDialog) }}>
+                <Auth />
+            </DialogComponent>
         </nav>
 
     )
