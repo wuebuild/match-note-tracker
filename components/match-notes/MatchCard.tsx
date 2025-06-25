@@ -4,6 +4,7 @@ import { timeConverter } from "@/utlis/time/time";
 import DialogComponent from "../tailwind/DialogComponent";
 import { useState } from "react";
 import { pickResultColor, pickResulTitle } from "@/utlis/pickResult";
+import DeleteForm from "./DeleteForm";
 
 function MatchCard (props: MatchCardProps) {
     const { info, onClick } = props
@@ -19,9 +20,9 @@ function MatchCard (props: MatchCardProps) {
 
     const [ openDialog, setOpenDialog ] = useState(false)
     return (
-        <Card img={null} tag={null}>
-            <div className="relative flex flex-col justify-between h-full">
-                <div className="min-h-[320px]">
+        <Card img={null} tag={null} className={"h-full flex flex-col"}>
+            <div className="relative flex flex-col justify-between flex-grow">
+                <div>
                     <div className="gap-16 max-h-[60px]">
                         <div className="flex-auto grid gap-[8px]">
                             <div className="font-bold text-[20px]">{info.title}</div>
@@ -64,6 +65,12 @@ function MatchCard (props: MatchCardProps) {
                 <div className="flex gap-2 mt-4 justify-end">
                     <div className="text-right">
                         <button
+                            onClick={() => { setOpenDialog(true) }}
+                            className="bg-red-400 text-white px-4 py-2 rounded hover:bg-red-500 text-[12px] font-bold"
+                        >Delete</button>
+                    </div>
+                    <div className="text-right">
+                        <button
                             onClick={() => { onClick() }}
                             className="bg-yellow-400 text-white px-4 py-2 rounded hover:bg-yellow-500 text-[12px] font-bold"
                         >Edit</button>
@@ -91,41 +98,7 @@ function MatchCard (props: MatchCardProps) {
             <DialogComponent open={openDialog} setOpenDialog={() => {
                 setOpenDialog(false)
             }}>
-                <div className="gap-16">
-                    <div className="flex-auto grid gap-[8px]">
-                        <div className="font-bold text-[20px]">{info.title}</div>
-                    </div>
-                    <div className="text-[8px]">posted: {`${moment(info.createdDate).format('YYYY-MM-DD HH:mm')}`}</div>
-                </div>
-                <div className="grid grid-cols-1 mt-4">
-                    <div>
-                        <div className="text-gray-500 text-[12px]">Kick Off Time:</div>
-                        <div className="text-[12px]">{`${moment(new Date(info.kickOffTime).toISOString()).format('YYYY-MM-DD')} ${timeConverter(info.kickOffTime)} UTC`}</div>
-                    </div>
-                </div>
-                <div className="grid grid-cols-2 mt-4">
-                    <div>
-                        <div className="text-gray-500 text-[12px]">Analyst Pick:</div>
-                        <div className="font-bold text-[16px]">{info.pickType} {info.pick}</div>
-                    </div>
-                    <div>
-                        <div className="text-gray-500 text-[12px]">Analyst Confidence:</div>
-                        <div className="font-bold text-[16px]">{info.confidence}</div>  
-                    </div>
-                </div>
-                <div className="gap-16 mt-4 text-[14px] overflow-scroll">
-                    <div className="text-gray-500 text-[12px]">Reason:</div>
-                    <div>{info.reason.id}</div>
-                    <div>{info.reason.en}</div>
-                </div>
-                <div className="gap-16 mt-4 min-h-30 max-h-30 text-[14px] overflow-scroll">
-                    <div className="text-gray-500 text-[12px]">Result & Reflection:</div>
-                    <div>{info.result}</div>
-                    <div>{info.reflection}</div>
-                </div>
-                <div className={`w-[100%] transform bg-${(info.pickResult != null || info.pickResult != undefined) && info.pickResult == 'true' ? 'green' : info.pickResult == 'false' ? 'red' : 'grey'}-600 text-center font-bold text-white text-[10px] py-1`}>
-                    {(info.pickResult != null || info.pickResult != undefined) && info.pickResult == 'true' ? 'Win' : info.pickResult == 'false' ? 'Lose' : 'TBD'}
-                </div>
+                <DeleteForm noteId={info.id || info._id || ''} closeDialog={() => { setOpenDialog(false) }}/>
             </DialogComponent>
         </Card>
     )

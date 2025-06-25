@@ -1,11 +1,11 @@
 import Image from "next/image"
 
 function Card (props : CardProps) {
-    const { children, img, tag} = props
+    const { children, img, tag, className} = props
     return (
         <div className="max-w-sm rounded overflow-hidden shadow-lg">
             {img && <Image className="w-full" src="/img/card-top.jpg" alt="Sunset in the mountains"/>}
-            <div className="px-6 py-4">
+            <div className={`px-6 py-4 ${className}`}>
                 {
                     children && children
                 }
@@ -33,5 +33,6 @@ export default Card
 interface CardProps {
     children: any | null,
     img: string | null,
-    tag: [string] | null
+    tag: [string] | null,
+    className?: any | null
 }

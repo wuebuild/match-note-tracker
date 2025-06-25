@@ -35,6 +35,13 @@ export const loadNote = (_id: string) => {
   return datas ? JSON.parse(datas).filter((v : any) => v._id == _id)[0] : null
 }
 
+export const deleteNoteLocal = (_id: string) => {
+  let datas = localStorage.getItem(STORAGE_KEY)
+  let newData = datas ? JSON.parse(datas).filter((note : any) => note._id !== _id) : []
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(newData));
+  window.location.reload()
+}
+
 export function updateNote(updatedNote: any) {
   const notes = loadNotes();
   const updated = notes.map((note: MatchNotes) =>

@@ -37,6 +37,14 @@ export async function updateNotes (notes: any) {
     return res.data
 }
 
+
+export async function deleteNote (noteId: number, callback?: any) {
+    const res = await client.delete(`/notes/delete?noteId=${noteId}`)
+    if (callback) { callback(); return;}
+    window.location.reload()
+    return res.data
+}
+
 export async function syncNotes () {
     console.log('here syncNotes')
     const notes = await loadNotes() || []
