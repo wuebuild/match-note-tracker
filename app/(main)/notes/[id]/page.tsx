@@ -5,6 +5,8 @@ import { loadNoteDetail } from '@/service/notesService';
 import Breadcrumb from '@/components/common/Breadcumb/Breadcumb';
 import { loadNote } from '@/utlis/storage/notes';
 
+export const dynamicParams = true;
+
 export default function Note(props: { params: Promise<{ id: string }> }) {
   
   const { id } = use(props.params);
