@@ -1,5 +1,5 @@
-export const dynamicParams = true;
 'use client';
+export const dynamicParams = true;
 import { use, useEffect, useState } from 'react';
 import NotesDetail from '@/components/match-notes/NotesDetail';
 import { loadNoteDetail } from '@/service/notesService';
