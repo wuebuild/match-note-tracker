@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import WBInput from "../common/Input/Input"
 import WBButton from "../common/Button/Button"
 import { toast } from "react-toastify"
@@ -21,6 +21,16 @@ function Register ({ signIn } : RegisterProps) {
     const [ confirmPassword, setConfirmPassword ] = useState('')
     const [ loading, setLoading ] = useState(false)
 
+    useEffect(() => {
+        if (form) { 
+            setJoiForm({
+                name: form.name ? '' : "Name can't be empty",
+                email: form.email ? '' : "Email can't be empty",
+                password: form.password ? '' : "Password can't be empty"
+            })
+        }
+    }, [form])
+
     const onChange = (e:any) => {
         setForm(prev => ({
             ...prev,
@@ -34,10 +44,12 @@ function Register ({ signIn } : RegisterProps) {
 
     const register = async () => {
         if (form) { 
+            setLoading(true)
             await registerUser({
                 ...form,
                 confirmPassword
             })
+            setLoading(false)
         } else { toast.error("Please fill the form") }
     }
 

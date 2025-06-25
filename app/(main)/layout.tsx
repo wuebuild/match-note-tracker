@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "../../styles/global.css";
 import Nav from "@/components/common/Nav";
 import Footer from "@/components/common/Footer";
-import Providers from "../provider";
 import { ToastContainer } from "react-toastify";
 import { NotesSyncer } from "@/components/match-notes/NotesSync";
 

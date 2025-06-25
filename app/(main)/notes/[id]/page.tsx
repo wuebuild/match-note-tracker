@@ -22,13 +22,13 @@ export default function Note(props: { params: Promise<{ id: string }> }) {
 
   const loadNotesDetailFromServer = async () => {
     setLoading(true)
-    let data = await loadNoteDetail(Number(id))
+    const data = await loadNoteDetail(Number(id))
     if (data.data) { setNote(data.data) }
     setLoading(false)
   }
 
   const loadNotesDetailFromLocal = async () => {
-    let data = await loadNote(id)
+    const data = await loadNote(id)
     console.log('here data', data)
     setNote(data)
   }

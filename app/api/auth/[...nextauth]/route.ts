@@ -8,6 +8,7 @@ const handler = NextAuth({
   debug: true,
   callbacks: {
     async jwt({ token, user, account }) {
+      console.log('here check account', account)
       // Add tokens from your backend or provider
       if (user?.access_token) token.accessToken = user.access_token;
       if (user?.refresh_token) token.refreshToken = user.refresh_token;

@@ -1,7 +1,6 @@
 "use client"
 import { logIn } from "@/service/authService";
 import { providerMap } from "@/src/lib/auth";
-import { signIn } from "next-auth/react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
@@ -18,6 +17,7 @@ export default function SignInPage() {
   }, []);
 
   const submitCredentials = async (e:any, provider:any) => {
+    console.log('here provider', provider)
     e.preventDefault();
     await logIn({
       email: credentials ? credentials.email : '',
@@ -120,7 +120,7 @@ export default function SignInPage() {
                 </button>
               </div>
             </form> */}
-            <div className="text-xs mt-8 text-center">Don't have account ? <span className="cursor-pointer">Sign up</span></div>
+            <div className="text-xs mt-8 text-center">{"Don't have account ? "}<span className="cursor-pointer">{"Sign up"}</span></div>
           </div>
         </div>
       </div>

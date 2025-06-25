@@ -19,7 +19,7 @@ function Nav ({
     
 
     useEffect(() => {
-        let accessToken = localStorage.getItem('mgm_access_token')
+        const accessToken = localStorage.getItem('mgm_access_token')
         setSession(accessToken)
     }, [])
 

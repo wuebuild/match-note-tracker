@@ -23,8 +23,8 @@ export function NotesSyncer() {
       if (session) {
           setLoading(true)
           syncNotes()
-          .then((msg) => {setLoading(false); toast.success('Sync Done'); window.location.reload()})
-          .catch((err) => {setLoading(false); toast.error("Sync failed")});
+          .then(() => {setLoading(false); toast.success('Sync Done'); window.location.reload()})
+          .catch(() => {setLoading(false); toast.error("Sync failed")});
       }
     }
   }
