@@ -5,6 +5,7 @@ import DialogComponent from "../tailwind/DialogComponent";
 import { useState } from "react";
 import { pickResultColor, pickResulTitle } from "@/utlis/pickResult";
 import DeleteForm from "./DeleteForm";
+import { useRouter } from "next/router";
 
 function MatchCard (props: MatchCardProps) {
     const { info, onClick } = props
@@ -19,6 +20,7 @@ function MatchCard (props: MatchCardProps) {
     generatedPost += `🔁 Reflection: ${info.reflection || '-'}\n`
 
     const [ openDialog, setOpenDialog ] = useState(false)
+    const router = useRouter();
     return (
         <Card img={null} tag={null} className={"h-full flex flex-col"}>
             <div className="relative flex flex-col justify-between flex-grow">
@@ -59,7 +61,7 @@ function MatchCard (props: MatchCardProps) {
                 </div>
                 <div>
                     <div className="text-center text-[12px] cursor-pointer underline" onClick={() => {
-                        window.location.href = `/notes/${info.id || info._id}`
+                        router.push(`/notes/${info.id || info._id}`);
                     }}>Read more</div>
                 </div>
                 <div className="flex gap-2 mt-4 justify-end">
