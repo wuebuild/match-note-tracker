@@ -1,11 +1,10 @@
+export const dynamicParams = true;
 'use client';
 import { use, useEffect, useState } from 'react';
 import NotesDetail from '@/components/match-notes/NotesDetail';
 import { loadNoteDetail } from '@/service/notesService';
 import Breadcrumb from '@/components/common/Breadcumb/Breadcumb';
 import { loadNote } from '@/utlis/storage/notes';
-
-export const dynamicParams = true;
 
 export default function Note(props: { params: Promise<{ id: string }> }) {
   
