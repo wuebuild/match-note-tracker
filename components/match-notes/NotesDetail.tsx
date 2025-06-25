@@ -2,7 +2,10 @@
 
 import { pickResultColor, pickResulTitle } from "@/utlis/pickResult";
 import moment from "moment";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import DialogComponent from "../tailwind/DialogComponent";
+import DeleteForm from "./DeleteForm";
+import MatchForm from "./MatchForm";
 
 interface NotesDetailProps {
     note : MatchNotes
@@ -11,6 +14,11 @@ interface NotesDetailProps {
 function NotesDetail ({
     note
 } : NotesDetailProps) {
+
+    const [ showDialog, setShowDialog ] = useState({
+        action: '',
+        isOpen: false
+    })
 
     useEffect(() => {
     }, [note])
@@ -31,14 +39,28 @@ function NotesDetail ({
             <div className="flex items-center justify-between">
                 <div className="text-xl font-bold text-gray-800">{note.title}</div>
                 {canEdit && (
-                    <button
-                    className="text-sm bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-1 px-3 rounded shadow"
-                    onClick={() => {
-                        // your edit logic here
-                    }}
-                    >
-                    ✏️ Edit
-                    </button>
+                    <div className="flex gap-2">
+                        <button
+                            className="bg-yellow-400 text-white px-4 py-2 rounded hover:bg-yellow-500 text-[12px] font-bold"
+                            onClick={() => {
+                                // your edit logic here
+                                setShowDialog({
+                                    action: 'edit',
+                                    isOpen: true
+                                })
+                            }}
+                            >Edit</button>
+                        <button
+                            className="bg-red-400 text-white px-4 py-2 rounded hover:bg-red-500 text-[12px] font-bold"
+                            onClick={() => {
+                                // your edit logic here
+                                setShowDialog({
+                                    action: 'delete',
+                                    isOpen: true
+                                })
+                            }}
+                            >Delete</button>
+                    </div>
                 )}
             </div>
 
@@ -81,6 +103,20 @@ function NotesDetail ({
                 <div className="font-semibold text-sm text-gray-800">Reflection</div>
                 <div className="text-sm">{note.reflection || '-'}</div>
             </div>
+            <DialogComponent open={showDialog.isOpen} setOpenDialog={() => { setShowDialog({
+                action: '', isOpen: false
+            }) }}>
+                {
+                    showDialog.action == 'edit' && 
+                    <MatchForm data={note}/>
+                }
+                {
+                    showDialog.action == 'delete' && 
+                    <DeleteForm noteId={note.id || note._id || ''} closeDialog={() => { setShowDialog({
+                        action: '', isOpen: false
+                    }) }} callback={() => {window.location.replace('/notes')}}/>
+                }
+            </DialogComponent>
         </div>
     )
 }

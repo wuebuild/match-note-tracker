@@ -15,7 +15,7 @@ export async function loadNoteDetail (noteId: number) {
     return res.data
 }
 
-export async function createNotes (notes: any) {
+export async function createNotes (notes: any, callback?:any) {
     let { pick, pickType, user, id, _id, isSynced, ...newNotes } = notes
     const res = await client.post('/notes/create', {
         ...newNotes,
@@ -23,17 +23,22 @@ export async function createNotes (notes: any) {
         result: typeof notes.result != "object" ? notes.result ? { en: notes.result, id: ''} : '' : notes.result,
         reflection: typeof notes.reflection != "object" ? notes.reflection ? { en: notes.reflection, id: ''} : '' : notes.reflection
     })
+    if (callback) { callback(); return; }
+    window.location.reload()
     return res.data
 }
 
-export async function updateNotes (notes: any) {
+export async function updateNotes (notes: any, callback?:any) {
     let { _id, pick, pickType, user, isSynced, ...newNotes } = notes
     const res = await client.patch('/notes/update', {
         ...newNotes,
         confidence: Number(notes.confidence || 1),
+        pickInfo: notes.pick || '',
         result: typeof notes.result != "object" ? notes.result ? { en: notes.result, id: ''} : '' : notes.result,
         reflection: typeof notes.reflection != "object" ? notes.reflection ? { en: notes.reflection, id: ''} : '' : notes.reflection
     })
+    if (callback) { callback(); return; }
+    window.location.reload()
     return res.data
 }
 

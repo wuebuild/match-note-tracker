@@ -4,19 +4,20 @@ import { deleteNoteLocal } from "@/utlis/storage/notes";
 
 interface DeleteFormProps {
     noteId: string,
-    closeDialog?: any
+    closeDialog?: any,
+    callback?: any
 }
 
 function DeleteForm ({
-    noteId, closeDialog
+    noteId, closeDialog, callback
 } : DeleteFormProps) {
 
     const deleteNotes = async () => {
         const session = localStorage.getItem('mgm_access_token')
-        if (session) { await deleteNote(Number(noteId)) }
+        if (session) { await deleteNote(Number(noteId), callback) }
         else { 
             // delete locally
-            deleteNoteLocal(noteId)
+            deleteNoteLocal(noteId, callback)
         }
     }
 

@@ -65,9 +65,12 @@ function MatchCard (props: MatchCardProps) {
                 <div className="flex gap-2 mt-4 justify-end">
                     <div className="text-right">
                         <button
-                            onClick={() => { setOpenDialog(true) }}
-                            className="bg-red-400 text-white px-4 py-2 rounded hover:bg-red-500 text-[12px] font-bold"
-                        >Delete</button>
+                            onClick={() => {
+                                navigator.clipboard.writeText(generatedPost);
+                                alert("Copied to clipboard!");
+                            }}
+                            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-[12px] font-bold"
+                        >Copy</button>
                     </div>
                     <div className="text-right">
                         <button
@@ -77,12 +80,9 @@ function MatchCard (props: MatchCardProps) {
                     </div>
                     <div className="text-right">
                         <button
-                            onClick={() => {
-                                navigator.clipboard.writeText(generatedPost);
-                                alert("Copied to clipboard!");
-                            }}
-                            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-[12px] font-bold"
-                        >Copy</button>
+                            onClick={() => { setOpenDialog(true) }}
+                            className="bg-red-400 text-white px-4 py-2 rounded hover:bg-red-500 text-[12px] font-bold"
+                        >Delete</button>
                     </div>
                     {/* <div className="text-right">
                         <button
