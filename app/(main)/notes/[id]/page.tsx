@@ -1,3 +1,5 @@
+'use client';
+
 export const dynamicParams = true;
 import NotesDetail from '@/components/match-notes/NotesDetail';
 
