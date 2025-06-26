@@ -1,24 +1,52 @@
 'use client';
 
-import { pickResultColor, pickResulTitle } from "@/utlis/pickResult";
 import moment from "moment";
 import { useEffect, useState } from "react";
+import { pickResultColor, pickResulTitle } from "@/utlis/pickResult";
 import DialogComponent from "../tailwind/DialogComponent";
 import DeleteForm from "./DeleteForm";
 import MatchForm from "./MatchForm";
+import { loadNoteDetail } from '@/service/notesService';
+import { loadNote } from '@/utlis/storage/notes';
+import Breadcrumb from "../common/Breadcumb/Breadcumb";
 
 interface NotesDetailProps {
-    note : MatchNotes
+    id : string
 }
 
 function NotesDetail ({
-    note
+    id
 } : NotesDetailProps) {
 
     const [ showDialog, setShowDialog ] = useState({
         action: '',
         isOpen: false
     })
+
+    const [ note, setNote ] = useState<MatchNotes>()
+    const [ loading, setLoading ] = useState(true)
+
+    useEffect(() => {
+        const session = localStorage.getItem('mgm_access_token')
+        if (session) {
+        loadNotesDetailFromServer()
+        } else {
+        loadNotesDetailFromLocal()
+        }
+    }, [])
+
+    const loadNotesDetailFromServer = async () => {
+        setLoading(true)
+        const data = await loadNoteDetail(Number(id))
+        if (data.data) { setNote(data.data) }
+        setLoading(false)
+    }
+
+    const loadNotesDetailFromLocal = async () => {
+        const data = await loadNote(id)
+        console.log('here data', data)
+        setNote(data)
+    }
 
     useEffect(() => {
     }, [note])
@@ -34,7 +62,15 @@ function NotesDetail ({
     })();
 
     return (
-        <div className="grid gap-4">
+        <>
+        <Breadcrumb
+            items={[
+            { label: 'Home', href: '/' },
+            { label: 'Notes', href: '/notes' },
+            { label: note?.title || note?.id || '-' } // current page, no link
+            ]}
+        />
+        { note && <div className="grid gap-4">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="text-xl font-bold text-gray-800">{note.title}</div>
@@ -117,7 +153,9 @@ function NotesDetail ({
                     }) }} callback={() => {window.location.replace('/notes')}}/>
                 }
             </DialogComponent>
-        </div>
+        </div>}
+        { (!id && !loading) && <div>Not Found</div>}
+        </>
     )
 }
 
