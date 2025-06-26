@@ -1,7 +1,7 @@
-'use client';
-
 export const dynamicParams = true;
-import NotesDetail from '@/components/match-notes/NotesDetail';
+
+import dynamic from 'next/dynamic';
+const NotesDetail = dynamic(() => import('@/components/match-notes/NotesDetail'), { ssr: false });
 
 export default function Note({ params }: { params: { id: string } }) {
   const id = params.id;
