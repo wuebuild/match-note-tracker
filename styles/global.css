@@ -1,27 +1,29 @@
 @import 'tailwindcss';
 
-@import "tailwindcss";
-
 :root {
   --background: #ffffff;
   --foreground: #171717;
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   :root {
     --background: #18181b;
     --text: #f4f6fa;
     --primary: #045326;
     --accent: #418554;
+    --appblue: #009def;
+    --appgrey: #9fafa1;
     --highlight: #f59e42;
   }
-}
+} */
 
 @theme {
   --color-primary: #045326;
   --color-secondary: #64748b;
   --color-accent: #418554;
   --color-background: #f4f6fa;
+  --color-appblue: #009def;
+  --color-appgrey: #9fafa1;
 
   --color-dark: #64748b;
 

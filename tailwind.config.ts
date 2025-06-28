@@ -1,3 +1,3 @@
 module.exports = {
-  darkMode: 'false', // ❌ DEFAULT (follows system)
+  darkMode: 'class', // Important: switch to class mode
 }
