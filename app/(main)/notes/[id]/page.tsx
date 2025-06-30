@@ -8,6 +8,7 @@ export default function Note(props: { params: Promise<{ id: string }> }) {
   return (
         <div className="grid grid-rows-[20px_1fr_20px] min-h-screen gap-2 p-8 sm:p-8 xl:p-20 xl:pt-8 font-[family-name:var(--font-geist-sans)]">
             <div className='mt-4'>
+                <div>Hello World</div>
                 {/* <MatchForm/> */}
                 { id && <NotesDetail id={id}/>}
             </div>
