@@ -7,6 +7,7 @@ import { useState } from "react";
 import { pickResultColor, pickResulTitle } from "@/utlis/pickResult";
 import DeleteForm from "./DeleteForm";
 import { useRouter } from "next/navigation";
+import CardShareComponent from "./CardShare";
 
 function MatchCard (props: MatchCardProps) {
     const { info, onClick } = props
@@ -20,7 +21,10 @@ function MatchCard (props: MatchCardProps) {
     generatedPost += `📌 Result: ${info.result || 'TBD'}\n`
     generatedPost += `🔁 Reflection: ${info.reflection || '-'}\n`
 
-    const [ openDialog, setOpenDialog ] = useState(false)
+    const [ openDialog, setOpenDialog ] = useState({
+        isOpen: false,
+        type: ''
+    })
     const router = useRouter();
     return (
         <Card img={null} tag={null} className={"h-full flex flex-col"}>
@@ -65,7 +69,29 @@ function MatchCard (props: MatchCardProps) {
                         router.push(`/notes/${info.id || info._id}`);
                     }}>Read more</div>
                 </div>
-                <div className="flex gap-2 mt-4 justify-end">
+                <div className="flex gap-2 mt-4 justify-end items-center">
+                    <div className="text-left w-full">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5 text-appgrey cursor-pointer"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={1.8}
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            onClick={() => { setOpenDialog({
+                                isOpen: true,
+                                type: 'share'
+                            })}}
+                        >
+                            <circle cx="18" cy="5" r="3" fill="currentColor" />
+                            <circle cx="6" cy="12" r="3" fill="currentColor" />
+                            <circle cx="18" cy="19" r="3" fill="currentColor" />
+                            <line x1="8.8" y1="10.4" x2="15.2" y2="6.6" />
+                            <line x1="8.8" y1="13.6" x2="15.2" y2="17.4" />
+                        </svg>
+                    </div>
                     <div className="text-right">
                         <button
                             onClick={() => {
@@ -83,7 +109,10 @@ function MatchCard (props: MatchCardProps) {
                     </div>
                     <div className="text-right">
                         <button
-                            onClick={() => { setOpenDialog(true) }}
+                            onClick={() => { setOpenDialog({
+                                isOpen: true,
+                                type: 'delete'
+                            }) }}
                             className="bg-red-400 text-white px-4 py-2 rounded hover:bg-red-500 text-[12px] font-bold"
                         >Delete</button>
                     </div>
@@ -98,10 +127,21 @@ function MatchCard (props: MatchCardProps) {
                     </div> */}
                 </div>
             </div>
-            <DialogComponent open={openDialog} setOpenDialog={() => {
-                setOpenDialog(false)
+            <DialogComponent open={openDialog.isOpen} setOpenDialog={() => {
+                setOpenDialog({
+                    isOpen: false, type: ''
+                })
             }}>
-                <DeleteForm noteId={info.id || info._id || ''} closeDialog={() => { setOpenDialog(false) }}/>
+                {
+                    openDialog.type == 'share' &&
+                    <CardShareComponent note={info} />
+                }
+                {
+                    openDialog.type == 'delete' &&
+                    <DeleteForm noteId={info.id || info._id || ''} closeDialog={() => { setOpenDialog({
+                        isOpen: false, type: ''
+                    }) }}/>
+                }
             </DialogComponent>
         </Card>
     )

@@ -17,9 +17,9 @@ function MatchForm(props: MatchFormProps) {
     ]
 
     const winnerOptions = [
-        { value: 'Home', label: 'Home' },
-        { value: 'Away', label: 'Away' },
-        { value: 'Draw', label: 'Draw' }
+        { value: 'home', label: 'Home' },
+        { value: 'away', label: 'Away' },
+        { value: 'draw', label: 'Draw' }
     ];
 
     const overUnderOptions = [
