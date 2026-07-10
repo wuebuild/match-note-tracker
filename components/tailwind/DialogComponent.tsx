@@ -1,47 +1,26 @@
 'use client'
-import { Fragment } from "react"
-import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react'
+import { Modal } from '@heroui/react'
 
 export default function DialogComponent (props: DialogProps) {
-    const { open, children, setOpenDialog } = props
+    const { open, children, setOpenDialog, size = 'md', label = 'Dialog' } = props
     return (
-        <Transition appear show={open} as={Fragment}>
-            <Dialog as="div" className="relative z-10" onClose={() => { setOpenDialog() }}>
-                <TransitionChild
-                    as={Fragment}
-                    enter="ease-out duration-300"
-                    enterFrom="opacity-0"
-                    enterTo="opacity-100"
-                    leave="ease-in duration-200"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                >
-                    <div className="fixed inset-0 bg-black/25" />
-                </TransitionChild>
-                <div className="fixed inset-0 overflow-y-auto">
-                    <div className="flex min-h-full items-center justify-center p-4 text-center">
-                        <TransitionChild
-                            as={Fragment}
-                            enter="ease-out duration-300"
-                            enterFrom="opacity-0 scale-95"
-                            enterTo="opacity-100 scale-100"
-                            leave="ease-in duration-200"
-                            leaveFrom="opacity-100 scale-100"
-                            leaveTo="opacity-0 scale-95"
-                        >
-                            <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                                {children && children}
-                            </DialogPanel>
-                        </TransitionChild>
-                    </div>
-                </div>
-            </Dialog>
-        </Transition>
+        <Modal.Backdrop isOpen={open} onOpenChange={(isOpen) => { if (!isOpen) setOpenDialog() }}>
+            <Modal.Container size={size} placement="auto">
+                <Modal.Dialog aria-label={label}>
+                    <Modal.CloseTrigger />
+                    <Modal.Body className="pt-6">
+                        {children && children}
+                    </Modal.Body>
+                </Modal.Dialog>
+            </Modal.Container>
+        </Modal.Backdrop>
     )
 }
 
 interface DialogProps {
     open: boolean | false,
     children: any,
-    setOpenDialog: any
+    setOpenDialog: any,
+    size?: 'xs' | 'sm' | 'md' | 'lg',
+    label?: string
 }

@@ -1,8 +1,7 @@
 'use client'
 
 import { useEffect, useState } from "react"
-import WBInput from "../common/Input/Input"
-import WBButton from "../common/Button/Button"
+import { Button, FieldError, Input, Label, TextField } from "@heroui/react";
 import { toast } from "react-toastify"
 import { registerUser } from "@/service/userService"
 
@@ -22,7 +21,7 @@ function Register ({ signIn } : RegisterProps) {
     const [ loading, setLoading ] = useState(false)
 
     useEffect(() => {
-        if (form) { 
+        if (form) {
             setJoiForm({
                 name: form.name ? '' : "Name can't be empty",
                 email: form.email ? '' : "Email can't be empty",
@@ -43,7 +42,7 @@ function Register ({ signIn } : RegisterProps) {
     }
 
     const register = async () => {
-        if (form) { 
+        if (form) {
             setLoading(true)
             await registerUser({
                 ...form,
@@ -54,40 +53,45 @@ function Register ({ signIn } : RegisterProps) {
     }
 
     return (
-        <div className="flex overflow-hidden relative w-full h-full">
-            <div className="z-20 flex w-full items-center justify-center">
-                <div className="flex flex-col justify-center items-center w-90 text-xl">
-                    <div className="flex flex-col gap-1 p-6 m-4 w-full bg-white rounded shadow-lg">
-                        <div className="grid gap-3">
-                            <div className="w-full">
-                                <WBInput title="Name"  value={form?.name || ''} onChange={(e:any) => {
-                                    onChange({name: e})
-                                }} placeHolder="Name" error={joiForm.name}/>
-                            </div>
-                            <div className="w-full">
-                                <WBInput title="Email"  value={form?.email || ''} onChange={(e:any) => {
-                                    onChange({email: e})
-                                }} placeHolder="Email" error={joiForm.email}/>
-                            </div>
-                            <div className="w-full">
-                                <WBInput title="Password" type="password" value={form?.password || ''} onChange={(e:any) => {
-                                    onChange({password: e})
-                                }} placeHolder="Password" error={joiForm.password}/>
-                            </div>
-                            <div className="w-full">
-                                <WBInput title="Confirm Password" type="password" value={confirmPassword || ''} onChange={(e:any) => {
-                                    setConfirmPassword(e)
-                                }} placeHolder="Confirm Password" error={checkPassword() ? '' : "*Password not match"}/>
-                            </div>
-                            <WBButton loading={loading} className="mt-4" disabled={!checkPassword() || joiForm.name || joiForm.email || joiForm.password} onClick={() => {
-                                register()
-                            }}>Sign In</WBButton>
-                            <div className="text-xs mt-8 text-right">Already have an account ? <span className="cursor-pointer" onClick={() => {
-                                if (signIn) signIn()
-                            }}>Sign In</span></div>
-                        </div>
-                    </div>
-                </div>
+        <div className="flex w-full flex-col gap-4">
+            <div className="text-center">
+                <h2 className="text-lg font-bold">Create your account</h2>
+                <p className="text-sm text-muted">Keep your analysis history and earn points for correct picks.</p>
+            </div>
+            <TextField isRequired value={form?.name || ''} isInvalid={Boolean(joiForm.name)}
+                onChange={(v: string) => onChange({name: v})}>
+                <Label>Name</Label>
+                <Input placeholder="Your name" />
+                <FieldError>{joiForm.name}</FieldError>
+            </TextField>
+            <TextField type="email" isRequired value={form?.email || ''} isInvalid={Boolean(joiForm.email)}
+                onChange={(v: string) => onChange({email: v})}>
+                <Label>Email</Label>
+                <Input placeholder="you@example.com" />
+                <FieldError>{joiForm.email}</FieldError>
+            </TextField>
+            <TextField type="password" isRequired value={form?.password || ''} isInvalid={Boolean(joiForm.password)}
+                onChange={(v: string) => onChange({password: v})}>
+                <Label>Password</Label>
+                <Input placeholder="••••••••" />
+                <FieldError>{joiForm.password}</FieldError>
+            </TextField>
+            <TextField type="password" isRequired value={confirmPassword} isInvalid={!checkPassword()}
+                onChange={(v: string) => setConfirmPassword(v)}>
+                <Label>Confirm password</Label>
+                <Input placeholder="••••••••" />
+                <FieldError>Password does not match</FieldError>
+            </TextField>
+            <Button fullWidth className="mt-2"
+                isDisabled={loading || !checkPassword() || Boolean(joiForm.name || joiForm.email || joiForm.password)}
+                onPress={() => { register() }}>
+                {loading ? 'Creating account…' : 'Sign Up'}
+            </Button>
+            <div className="text-center text-xs text-muted">
+                Already have an account?{' '}
+                <button type="button" className="cursor-pointer font-semibold text-pitch-600 hover:underline" onClick={() => {
+                    if (signIn) signIn()
+                }}>Sign in</button>
             </div>
         </div>
     )

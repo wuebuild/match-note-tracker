@@ -1,9 +1,7 @@
 "use client"
-import { logIn } from "@/service/authService";
-import { providerMap } from "@/src/lib/auth";
 import { useEffect, useState } from "react";
-import WBInput from "../common/Input/Input";
-import WBButton from "../common/Button/Button";
+import { Button, Input, Label, TextField } from "@heroui/react";
+import { logIn } from "@/service/authService";
 
 interface LoginProps {
     signUp?: any
@@ -15,104 +13,54 @@ export default function Login({ signUp } : LoginProps) {
     email: '',
     password: ''
   })
-  
+  const [ loading, setLoading ] = useState(false)
+
   useEffect(() => {
     const session = localStorage.getItem('mgm_access_token')
     if (session) { window.location.replace('/') }
   }, []);
 
-  const submitCredentials = async (e:any, provider:any) => {
-    console.log('here provider', provider)
-    e.preventDefault();
-    await logIn({
-      email: credentials ? credentials.email : '',
-      password: credentials ? credentials.password : ''
-    })
+  const submitCredentials = async () => {
+    setLoading(true)
+    try {
+      await logIn({
+        email: credentials.email,
+        password: credentials.password
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
-    <div className="flex overflow-hidden relative w-full h-full">
-      <div className="z-20 flex w-full items-center justify-center">
-        <div className="flex flex-col justify-center items-center w-90 text-xl">
-            <div className="flex flex-col gap-1 p-6 m-4 w-full bg-white rounded shadow-lg">
-            {/* credentials index 0 */}
-            <form
-                className="[&>div]:last-of-type:hidden"
-                onSubmit={async (e) => {
-                  submitCredentials(e, providerMap[0])
-                }}
-              >
-                <>
-                    <WBInput
-                        title="Email"
-                        required
-                        placeHolder="Email"
-                        name="email"
-                        type="email"
-                        value={credentials.email}
-                        onChange={(e: any) => {
-                        setCredentials(prev => ({
-                            ...prev,
-                            email: e
-                        }))
-                        }}
-                    />
-                    <WBInput
-                        title="Password"
-                        required
-                        placeHolder="Password"
-                        name="password"
-                        type="password"
-                        value={credentials.password}
-                        onChange={(e: any) => {
-                            setCredentials(prev => ({
-                            ...prev,
-                            password: e
-                            }))
-                        }}
-                    />
-                    <WBButton className="mt-8 w-full" onClick={async (e:any) => {
-                        submitCredentials(e, providerMap[0])
-                    }}>
-                        <span>Login</span>
-                    </WBButton>
-                </>
-            </form>
-            {/* <div className="flex gap-2 items-center my-4">
-              <div className="flex-1 bg-neutral-300 h-[1px]" />
-              <span className="text-xs leading-4 uppercase text-neutral-500">
-                or
-              </span>
-              <div className="flex-1 bg-neutral-300 h-[1px]" />
-            </div>
-            <form action={ async () => {
-                const provider = providerMap[1]
-                await signIn(provider.id, { redirectTo: "/" });
-            }}>
-              <div className="text-center">
-                <button className="gsi-material-button">
-                  <div className="gsi-material-button-state"></div>
-                  <div className="gsi-material-button-content-wrapper">
-                    <div className="gsi-material-button-icon">
-                      <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" xmlnsXlink="http://www.w3.org/1999/xlink" style={{display: 'block'}}>
-                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
-                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
-                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
-                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
-                        <path fill="none" d="M0 0h48v48H0z"></path>
-                      </svg>
-                    </div>
-                    <span className="gsi-material-button-contents">Sign in with Google</span>
-                    <span style={{display: 'none'}}>Sign in with Google</span>
-                  </div>
-                </button>
-              </div>
-            </form> */}
-            <div className="text-xs mt-8 text-center">{"Don't have account ? "}<span className="cursor-pointer" onClick={() => {
-                if (signUp) signUp()
-            }}>{"Sign up"}</span></div>
-          </div>
-        </div>
+    <div className="flex w-full flex-col gap-4">
+      <div className="text-center">
+        <h2 className="text-lg font-bold">Welcome back</h2>
+        <p className="text-sm text-muted">Sign in to sync your notes and climb the leaderboard.</p>
+      </div>
+      <form
+        className="flex flex-col gap-4"
+        onSubmit={(e) => { e.preventDefault(); submitCredentials() }}
+      >
+        <TextField name="email" type="email" isRequired value={credentials.email}
+          onChange={(v: string) => setCredentials(prev => ({ ...prev, email: v }))}>
+          <Label>Email</Label>
+          <Input placeholder="you@example.com" />
+        </TextField>
+        <TextField name="password" type="password" isRequired value={credentials.password}
+          onChange={(v: string) => setCredentials(prev => ({ ...prev, password: v }))}>
+          <Label>Password</Label>
+          <Input placeholder="••••••••" />
+        </TextField>
+        <Button type="submit" fullWidth isDisabled={loading} className="mt-2">
+          {loading ? 'Signing in…' : 'Sign In'}
+        </Button>
+      </form>
+      <div className="text-center text-xs text-muted">
+        {"Don't have an account? "}
+        <button type="button" className="cursor-pointer font-semibold text-pitch-600 hover:underline" onClick={() => {
+          if (signUp) signUp()
+        }}>Sign up</button>
       </div>
     </div>
   );

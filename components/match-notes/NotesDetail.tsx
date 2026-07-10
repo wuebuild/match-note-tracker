@@ -1,8 +1,11 @@
 'use client';
 
-import moment from "moment";
-import { useEffect, useState } from "react";
-import { pickResultColor, pickResulTitle } from "@/utlis/pickResult";
+import { useCallback, useEffect, useState } from "react";
+import { Button, Card, Chip, Skeleton } from "@heroui/react";
+import { Pencil, Trash2, CalendarClock } from "lucide-react";
+
+import { pickResulTitle, pickResultChipColor } from "@/utlis/pickResult";
+import { formatDateTime } from "@/utlis/time/time";
 import DialogComponent from "../tailwind/DialogComponent";
 import DeleteForm from "./DeleteForm";
 import MatchForm from "./MatchForm";
@@ -13,6 +16,9 @@ import Breadcrumb from "../common/Breadcumb/Breadcumb";
 interface NotesDetailProps {
     id : string
 }
+
+const bilingual = (value: any) =>
+    typeof value === 'object' && value !== null ? (value.en || value.id || '-') : (value || '-')
 
 function NotesDetail ({
     id
@@ -26,37 +32,27 @@ function NotesDetail ({
     const [ note, setNote ] = useState<MatchNotes>()
     const [ loading, setLoading ] = useState(true)
 
-    useEffect(() => {
+    const loadDetail = useCallback(async () => {
+        setLoading(true)
         const session = localStorage.getItem('mgm_access_token')
         if (session) {
-        loadNotesDetailFromServer()
+            const data = await loadNoteDetail(Number(id))
+            if (data.data) { setNote(data.data) }
         } else {
-        loadNotesDetailFromLocal()
+            const data = await loadNote(id)
+            if (data) { setNote(data) }
         }
-    }, [])
-
-    const loadNotesDetailFromServer = async () => {
-        setLoading(true)
-        const data = await loadNoteDetail(Number(id))
-        if (data.data) { setNote(data.data) }
         setLoading(false)
-    }
+    }, [id])
 
-    const loadNotesDetailFromLocal = async () => {
-        const data = await loadNote(id)
-        console.log('here data', data)
-        setNote(data)
-    }
-
-    useEffect(() => {
-    }, [note])
+    useEffect(() => { loadDetail() }, [loadDetail])
 
     const canEdit = (() => {
         try {
+            if (!localStorage.getItem('mgm_access_token')) { return true } // local notes are always editable
             const localUser = JSON.parse(localStorage.getItem('mgm_user') || '{}');
             return localUser?.id === note?.user?.id;
-        } catch (e) {
-            console.error('Failed to parse user:', e);
+        } catch {
             return false;
         }
     })();
@@ -67,94 +63,99 @@ function NotesDetail ({
             items={[
             { label: 'Home', href: '/' },
             { label: 'Notes', href: '/notes' },
-            { label: note?.title || note?.id || '-' } // current page, no link
+            { label: note?.title || note?.id || '-' }
             ]}
         />
-        { note && <div className="grid gap-4">
+        { loading &&
+            <div className="grid gap-4">
+                <Skeleton className="h-8 w-2/3" />
+                <Skeleton className="h-24" />
+                <Skeleton className="h-32" />
+            </div>
+        }
+        { !loading && note && <div className="grid gap-4">
             {/* Header */}
-            <div className="flex items-center justify-between">
-                <div className="text-xl font-bold text-gray-800">{note.title}</div>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                    <h1 className="text-xl font-bold tracking-tight">{note.title}</h1>
+                    <Chip color={pickResultChipColor(note)} size="sm">{pickResulTitle(note)}</Chip>
+                </div>
                 {canEdit && (
                     <div className="flex gap-2">
-                        <button
-                            className="bg-yellow-400 text-white px-4 py-2 rounded hover:bg-yellow-500 text-[12px] font-bold"
-                            onClick={() => {
-                                // your edit logic here
-                                setShowDialog({
-                                    action: 'edit',
-                                    isOpen: true
-                                })
-                            }}
-                            >Edit</button>
-                        <button
-                            className="bg-red-400 text-white px-4 py-2 rounded hover:bg-red-500 text-[12px] font-bold"
-                            onClick={() => {
-                                // your edit logic here
-                                setShowDialog({
-                                    action: 'delete',
-                                    isOpen: true
-                                })
-                            }}
-                            >Delete</button>
+                        <Button variant="secondary" size="sm"
+                            onPress={() => { setShowDialog({ action: 'edit', isOpen: true }) }}>
+                            <Pencil size={13} />
+                            Edit
+                        </Button>
+                        <Button variant="danger-soft" size="sm"
+                            onPress={() => { setShowDialog({ action: 'delete', isOpen: true }) }}>
+                            <Trash2 size={13} />
+                            Delete
+                        </Button>
                     </div>
                 )}
             </div>
 
-            <div className="text-xs text-gray-500">
-                Posted: {moment(note.createdDate).format('YYYY-MM-DD HH:mm')}
-            </div>
+            <div className="text-xs text-faint">Posted {formatDateTime(note.createdDate)}</div>
 
-            {/* Match Info Section */}
-            <div className="bg-gray-50 p-4 rounded-lg shadow-sm grid grid-cols-1 md:grid-cols-2 gap-1 items-center relative">
-                <div className="space-y-1 text-sm text-gray-700">
-                    <div><span className="font-semibold">Confidence:</span> {note.confidence}/10</div>
-                    {
-                        note.pickResult != null &&
-                        <div className={`absolute right-[-10px] top-[-10px] rotate-[8deg] px-3 py-1 text-white text-[11px] font-bold rounded-sm shadow ${pickResultColor(note)}`}>
-                        {pickResulTitle(note)}
-                        </div>
-                    }
+            {/* Match info */}
+            <Card className="grid gap-3 p-5 sm:grid-cols-3">
+                <div>
+                    <div className="text-[11px] uppercase tracking-wide text-muted">Pick</div>
+                    <div className="text-sm font-bold">{note.pickType ? `${note.pickType} · ` : ''}{note.pick || '-'}</div>
                 </div>
-                <div className="md:text-right text-sm text-gray-600">
-                    <span className="font-semibold">Kick Off:</span><br />
-                    {moment(note.kickOffTime).format('YYYY-MM-DD HH:mm')} UTC
+                <div>
+                    <div className="text-[11px] uppercase tracking-wide text-muted">Confidence</div>
+                    <div className="text-sm font-bold">{note.confidence}/10</div>
                 </div>
-            </div>
+                <div>
+                    <div className="text-[11px] uppercase tracking-wide text-muted">Kick-off</div>
+                    <div className="flex items-center gap-1.5 text-sm font-bold">
+                        <CalendarClock size={14} className="text-muted" />
+                        {formatDateTime(note.kickOffTime)}
+                    </div>
+                </div>
+            </Card>
 
-            {/* Analyst Reason */}
-            <div className="bg-white p-4 rounded-lg border space-y-2">
-                <div className="font-semibold text-sm text-gray-800">Analyst Reason</div>
-                <div className="text-sm"><span className="text-gray-600 font-medium">EN:</span> {note.reason.en}</div>
-                <div className="text-sm"><span className="text-gray-600 font-medium">ID:</span> {note.reason.id}</div>
-            </div>
+            {/* Analyst reason */}
+            <Card className="space-y-2 p-5">
+                <Card.Title className="text-sm font-bold">Analyst reason</Card.Title>
+                {note.reason?.en && <p className="text-sm"><span className="font-medium text-muted">EN:</span> {note.reason.en}</p>}
+                {note.reason?.id && <p className="text-sm"><span className="font-medium text-muted">ID:</span> {note.reason.id}</p>}
+                {!note.reason?.en && !note.reason?.id && <p className="text-sm text-faint">-</p>}
+            </Card>
 
-            {/* Match Result */}
-            <div className="bg-white p-4 rounded-lg border space-y-2">
-                <div className="font-semibold text-sm text-gray-800">Match Result</div>
-                <div className="text-sm">{note.result || '-'}</div>
-            </div>
+            {/* Match result */}
+            <Card className="space-y-2 p-5">
+                <Card.Title className="text-sm font-bold">Match result</Card.Title>
+                <p className="text-sm">{bilingual(note.result)}</p>
+            </Card>
 
             {/* Reflection */}
-            <div className="bg-white p-4 rounded-lg border space-y-2">
-                <div className="font-semibold text-sm text-gray-800">Reflection</div>
-                <div className="text-sm">{note.reflection || '-'}</div>
-            </div>
+            <Card className="space-y-2 p-5">
+                <Card.Title className="text-sm font-bold">Reflection</Card.Title>
+                <p className="text-sm">{bilingual(note.reflection)}</p>
+            </Card>
+
             <DialogComponent open={showDialog.isOpen} setOpenDialog={() => { setShowDialog({
                 action: '', isOpen: false
             }) }}>
                 {
-                    showDialog.action == 'edit' && 
-                    <MatchForm data={note}/>
+                    showDialog.action == 'edit' &&
+                    <MatchForm data={note} onSaved={() => {
+                        setShowDialog({ action: '', isOpen: false })
+                        loadDetail()
+                    }}/>
                 }
                 {
-                    showDialog.action == 'delete' && 
+                    showDialog.action == 'delete' &&
                     <DeleteForm noteId={note.id || note._id || ''} closeDialog={() => { setShowDialog({
                         action: '', isOpen: false
                     }) }} callback={() => {window.location.replace('/notes')}}/>
                 }
             </DialogComponent>
         </div>}
-        { (!id && !loading) && <div>Not Found</div>}
+        { (!note && !loading) && <div className="mt-10 text-center text-sm text-muted">Note not found</div>}
         </>
     )
 }

@@ -3,115 +3,96 @@ import { useEffect, useState } from "react"
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { Menu, X, LogOut } from "lucide-react";
+import { Button } from "@heroui/react";
 
 import { signOut } from "next-auth/react";
 import DialogComponent from "../tailwind/DialogComponent";
 import Auth from "../auth";
 
-function Nav ({
+const NAV_LINKS = [
+    { href: '/', label: 'Dashboard' },
+    { href: '/notes', label: 'Match Notes' },
+    { href: '/teams', label: 'Teams' },
+]
 
-}) {
+function Nav () {
 
     const [ isOpenMenu, setIsOpenMenu ] = useState(false)
     const [ openDialog, setOpenDialog ] = useState(false)
     const [ session, setSession ] = useState<string | null>(null);
     const pathName = usePathname()
-    
 
     useEffect(() => {
         const accessToken = localStorage.getItem('mgm_access_token')
         setSession(accessToken)
     }, [])
 
-    const checkPath = (path: any) => {
-        return pathName == path ? `rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white` : `rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white`
-    }
+    useEffect(() => { setIsOpenMenu(false) }, [pathName])
 
-    const checkPathMobile = (path:any) => {
-        return pathName == path ? `block rounded-md bg-gray-900 px-3 py-2 text-base font-medium text-white` : `block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white`
-    }
-    
+    const linkClass = (path: string) =>
+        pathName === path
+            ? "rounded-lg bg-pitch-50 px-3 py-2 text-sm font-semibold text-pitch-700"
+            : "rounded-lg px-3 py-2 text-sm font-medium text-muted hover:bg-pitch-50 hover:text-pitch-700 transition-colors"
+
+    const mobileLinkClass = (path: string) =>
+        pathName === path
+            ? "block rounded-lg bg-pitch-50 px-3 py-2.5 text-base font-semibold text-pitch-700"
+            : "block rounded-lg px-3 py-2.5 text-base font-medium text-muted hover:bg-pitch-50 hover:text-pitch-700"
+
     return (
-        <nav className="bg-gray-800 sticky top-0 z-2">
-            <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
-                <div className="relative flex h-16 items-center justify-between">
-                <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
-                    <button type="button" className="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset" aria-controls="mobile-menu" aria-expanded="false"
+        <nav className="sticky top-0 z-20 border-b border-line bg-white/90 backdrop-blur">
+            <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+                <div className="flex items-center gap-8">
+                    <Link href="/" className="flex items-center gap-2.5">
+                        <Image className="h-8 w-8 rounded-lg" src="/logo_.png" width={32} height={32} alt="Match Note Maker"/>
+                        <span className="text-[15px] font-bold tracking-tight text-ink">Match Note <span className="text-pitch-600">Maker</span></span>
+                    </Link>
+                    <div className="hidden items-center gap-1 sm:flex">
+                        {NAV_LINKS.map((link) => (
+                            <Link key={link.href} href={link.href} className={linkClass(link.href)}>{link.label}</Link>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    {
+                        !session ?
+                        <Button size="sm" onPress={() => { setOpenDialog(true) }}>
+                            Sign In
+                        </Button>
+                        :
+                        <Button size="sm" variant="secondary" onPress={() => { signOut(); localStorage.clear() }}>
+                            <LogOut size={14} />
+                            Sign Out
+                        </Button>
+                    }
+                    <button
+                        type="button"
+                        className="inline-flex items-center justify-center rounded-lg p-2 text-muted hover:bg-pitch-50 hover:text-pitch-700 sm:hidden"
+                        aria-controls="mobile-menu"
+                        aria-expanded={isOpenMenu}
                         onClick={() => { setIsOpenMenu(!isOpenMenu) }}
                     >
-                        <span className="absolute -inset-0.5"></span>
                         <span className="sr-only">Open main menu</span>
-                        {
-                            !isOpenMenu && 
-                            <svg className="block size-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                            </svg>
-                        }
-                        {
-                            isOpenMenu &&
-                            <svg className="block size-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                            </svg>
-                        }
+                        {isOpenMenu ? <X size={22} /> : <Menu size={22} />}
                     </button>
-                </div>
-                <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-                    <div className="flex shrink-0 items-center">
-                        <Image className="h-8 w-auto rounded-sm" src="/logo_.png" width={30} height={30} alt="Match Note Maker"/>
-                    </div>
-                    <div className="hidden sm:ml-6 sm:block">
-                        <div className="flex space-x-4">
-                            <Link href="/" className={checkPath('/')} aria-current="page">Dashboard</Link>
-                            <Link href="/notes" className={checkPath('/notes')}>Match Notes</Link>
-                        </div>
-                    </div>
-                </div>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-                    {/* <button type="button" className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden">
-                        <span className="absolute -inset-1.5"></span>
-                        <span className="sr-only">View notifications</span>
-                        <svg className="size-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
-                        </svg>
-                    </button> */}
-                    <div className="relative ml-3">
-                        <div>
-                            {
-                                !session ?
-                                <button type="button" className="relative bg-green-800 px-4 py-2 flex rounded-[10px] text-sm focus:ring-1 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden text-white cursor-pointer" id="user-menu-button" aria-expanded="false" aria-haspopup="true"
-                                    onClick={() => {
-                                        // window.location.href = '/auth/login'       
-                                        setOpenDialog(true)                                 
-                                    }}
-                                >
-                                    Sign In
-                                </button>
-                                :
-                                <button type="button" className="relative bg-green-800 px-4 py-2 flex rounded-[10px] text-sm focus:ring-1 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden text-white cursor-pointer" id="user-menu-button" aria-expanded="false" aria-haspopup="true"
-                                    onClick={() => { signOut(); localStorage.clear() }}
-                                >
-                                    Sign Out
-                                </button>
-                            }
-                        </div>
-                    </div>
-                </div>
                 </div>
             </div>
             {
                 isOpenMenu &&
-                <div className="sm:hidden" id="mobile-menu">
-                    <div className="space-y-1 px-2 pt-2 pb-3">
-                    <Link href="/" className={checkPathMobile('/')} aria-current="page">Dashboard</Link>
-                    <Link href="/notes" className={checkPathMobile('/notes')}>Match Notes</Link>
+                <div className="border-t border-line bg-white sm:hidden" id="mobile-menu">
+                    <div className="space-y-1 px-4 py-3">
+                        {NAV_LINKS.map((link) => (
+                            <Link key={link.href} href={link.href} className={mobileLinkClass(link.href)}>{link.label}</Link>
+                        ))}
                     </div>
                 </div>
             }
-            <DialogComponent open={openDialog} setOpenDialog={() => { setOpenDialog(!openDialog) }}>
+            <DialogComponent open={openDialog} setOpenDialog={() => { setOpenDialog(!openDialog) }} size="sm">
                 <Auth />
             </DialogComponent>
         </nav>
-
     )
 }
 

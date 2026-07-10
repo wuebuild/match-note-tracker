@@ -1,12 +1,9 @@
 import NotesHistory from "@/components/match-notes/NotesHistory"
 
-function History ({
-
-}) {
-
+function History () {
     return (
-        <div className="grid min-h-screen p-8 md:px-20 gap-16">
-            <main className="flex flex-col sm:items-start">
+        <div className="mx-auto min-h-screen w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+            <main>
                 <NotesHistory />
             </main>
         </div>

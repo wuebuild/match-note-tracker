@@ -1,146 +1,71 @@
-@import 'tailwindcss';
+/* ---------------------------------------------------------------------------
+   Match Note Maker — HeroUI v3 + Tailwind v4
+   (@heroui/styles already includes tailwindcss + tw-animate-css)
+   Light-mode only by design.
+--------------------------------------------------------------------------- */
+@import '@heroui/styles';
 
+/* --- Sporty pitch-green theme (overrides HeroUI default variables) ------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Base */
+  --background: oklch(0.977 0.004 155);
+  --foreground: oklch(0.24 0.02 160);
+  --surface: oklch(1 0 0);
+  --muted: oklch(0.52 0.02 160);
+
+  /* Interactive: pitch green */
+  --accent: oklch(0.52 0.12 155);
+  --accent-foreground: oklch(0.99 0 0);
+
+  /* Status */
+  --success: oklch(0.62 0.15 152);
+  --danger: oklch(0.6 0.21 27);
+  --warning: oklch(0.78 0.15 75);
+
+  /* Comfortable, friendly shapes */
+  --radius: 0.625rem;
+  --ring-offset-width: 2px;
 }
 
-/* @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #18181b;
-    --text: #f4f6fa;
-    --primary: #045326;
-    --accent: #418554;
-    --appblue: #009def;
-    --appgrey: #9fafa1;
-    --highlight: #f59e42;
-  }
-} */
-
+/* --- Extra brand tokens usable as Tailwind utilities (bg-pitch-700 …) ---- */
 @theme {
-  --color-primary: #045326;
+  --color-pitch-50: #eef7f1;
+  --color-pitch-100: #d7ecdf;
+  --color-pitch-200: #b0d9c1;
+  --color-pitch-300: #7fbf9c;
+  --color-pitch-400: #4c9f74;
+  --color-pitch-500: #2e8257;
+  --color-pitch-600: #1f6a45;
+  --color-pitch-700: #175437;
+  --color-pitch-800: #12432c;
+  --color-pitch-900: #0d3322;
+
+  --color-ink: #131a16;
+  --color-line: #e3e8e4;
+  --color-faint: #93a09a;
+
+  --color-win: #1f8a4c;
+  --color-lose: #d64545;
+
+  /* Legacy aliases still referenced in components */
+  --color-primary: #175437;
   --color-secondary: #64748b;
-  --color-accent: #418554;
-  --color-background: #f4f6fa;
+  --color-accent: #2e8257;
   --color-appblue: #009def;
-  --color-appgrey: #9fafa1;
-
-  --color-dark: #64748b;
-
-  --color-highlight: #f59e42;
-
+  --color-appgrey: #93a09a;
+  --color-highlight: #f5a942;
   --color-button-text: #f4f6fa;
-  --color-button-hover: #567eff;
-
+  --color-button-hover: #1f6a45;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-
-.gsi-material-button {
-  -moz-user-select: none;
-  -webkit-user-select: none;
-  -ms-user-select: none;
-  -webkit-appearance: none;
-  background-color: WHITE;
-  background-image: none;
-  border: 1px solid #747775;
-  -webkit-border-radius: 4px;
-  border-radius: 4px;
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-  color: #1f1f1f;
-  cursor: pointer;
-  font-family: 'Roboto', arial, sans-serif;
-  font-size: 14px;
-  height: 40px;
-  letter-spacing: 0.25px;
-  outline: none;
-  overflow: hidden;
-  padding: 0 12px;
-  position: relative;
-  text-align: center;
-  -webkit-transition: background-color .218s, border-color .218s, box-shadow .218s;
-  transition: background-color .218s, border-color .218s, box-shadow .218s;
-  vertical-align: middle;
-  white-space: nowrap;
-  width: auto;
-  max-width: 400px;
-  min-width: min-content;
-}
-
-.gsi-material-button .gsi-material-button-icon {
-  height: 20px;
-  margin-right: 12px;
-  min-width: 20px;
-  width: 20px;
-}
-
-.gsi-material-button .gsi-material-button-content-wrapper {
-  -webkit-align-items: center;
-  align-items: center;
-  display: flex;
-  -webkit-flex-direction: row;
-  flex-direction: row;
-  -webkit-flex-wrap: nowrap;
-  flex-wrap: nowrap;
-  height: 100%;
-  justify-content: space-between;
-  position: relative;
-  width: 100%;
-}
-
-.gsi-material-button .gsi-material-button-contents {
-  -webkit-flex-grow: 1;
-  flex-grow: 1;
-  font-family: 'Roboto', arial, sans-serif;
-  font-weight: 500;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  vertical-align: top;
-}
-
-.gsi-material-button .gsi-material-button-state {
-  -webkit-transition: opacity .218s;
-  transition: opacity .218s;
-  bottom: 0;
-  left: 0;
-  opacity: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
-}
-
-.gsi-material-button:disabled {
-  cursor: default;
-  background-color: #ffffff61;
-  border-color: #1f1f1f1f;
-}
-
-.gsi-material-button:disabled .gsi-material-button-contents {
-  opacity: 38%;
-}
-
-.gsi-material-button:disabled .gsi-material-button-icon {
-  opacity: 38%;
-}
-
-.gsi-material-button:not(:disabled):active .gsi-material-button-state, 
-.gsi-material-button:not(:disabled):focus .gsi-material-button-state {
-  background-color: #303030;
-  opacity: 12%;
-}
-
-.gsi-material-button:not(:disabled):hover {
-  -webkit-box-shadow: 0 1px 2px 0 rgba(60, 64, 67, .30), 0 1px 3px 1px rgba(60, 64, 67, .15);
-  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, .30), 0 1px 3px 1px rgba(60, 64, 67, .15);
-}
-
-.gsi-material-button:not(:disabled):hover .gsi-material-button-state {
-  background-color: #303030;
-  opacity: 8%;
+::selection {
+  background: var(--color-pitch-200);
 }

@@ -1,136 +1,108 @@
 'use client';
-import moment from "moment";
-import Card from "../tailwind/Card"
-import { timeConverter } from "@/utlis/time/time";
-import DialogComponent from "../tailwind/DialogComponent";
 import { useState } from "react";
-import { pickResultColor, pickResulTitle } from "@/utlis/pickResult";
-import DeleteForm from "./DeleteForm";
 import { useRouter } from "next/navigation";
+import { Button, Card, Chip, Tooltip } from "@heroui/react";
+import { Share2, Copy, Pencil, Trash2, CalendarClock } from "lucide-react";
+import { toast } from "react-toastify";
+
+import { timeConverter, formatDate, formatDateTime } from "@/utlis/time/time";
+import { pickResulTitle, pickResultChipColor } from "@/utlis/pickResult";
+import DialogComponent from "../tailwind/DialogComponent";
+import DeleteForm from "./DeleteForm";
 import CardShareComponent from "./CardShare";
 
 function MatchCard (props: MatchCardProps) {
-    const { info, onClick } = props
+    const { info, onClick, onChanged } = props
+
     let generatedPost = `📋 Match: ${info.title}\n`
     generatedPost += `🎯 Pick: ${info.pick}\n`
     generatedPost += `🔢 Confidence: ${info.confidence}/10\n`
     generatedPost += `🧠 Reason:\n`
     generatedPost += `EN: ${info.reason.en || '-'}\n`
     generatedPost += `ID: ${info.reason.id || '-'}\n\n\n`
-    generatedPost += `🕐 Kickoff: ${moment(new Date(info.kickOffTime).toISOString()).format('YYYY-MM-DD')} ${timeConverter(info.kickOffTime)} UTC\n`
+    generatedPost += `🕐 Kickoff: ${formatDate(info.kickOffTime)} ${timeConverter(info.kickOffTime)} UTC\n`
     generatedPost += `📌 Result: ${info.result || 'TBD'}\n`
     generatedPost += `🔁 Reflection: ${info.reflection || '-'}\n`
 
-    const [ openDialog, setOpenDialog ] = useState({
-        isOpen: false,
-        type: ''
-    })
+    const [ openDialog, setOpenDialog ] = useState({ isOpen: false, type: '' })
     const router = useRouter();
+    const confidence = Math.min(Math.max(Number(info.confidence) || 0, 0), 10)
+
     return (
-        <Card img={null} tag={null} className={"h-full flex flex-col"}>
-            <div className="relative flex flex-col justify-between flex-grow">
-                <div>
-                    <div className="gap-16 max-h-[60px]">
-                        <div className="flex-auto grid gap-[8px]">
-                            <div className="font-bold text-[20px]">{info.title}</div>
-                        </div>
-                        <div className="text-[8px]">posted: {`${moment(info.createdDate).format('YYYY-MM-DD HH:mm')}`}</div>
-                        {
-                            (info.pickResult != null && info.pickResult != undefined) &&
-                            <div className={`absolute right-[-70px] top-[0px] w-[150px] transform -rotate-320 text-center font-bold text-white text-[10px] py-1 ${pickResultColor(info)}`}>
-                                {pickResulTitle(info)}
-                            </div>
-                        }
-                    </div>
-                    <div className="grid grid-cols-1 mt-4">
-                        <div>
-                            <div className="text-gray-500 text-[12px]">Kick Off Time:</div>
-                            <div className="text-[12px]">{`${moment(new Date(info.kickOffTime).toISOString()).format('YYYY-MM-DD')} ${timeConverter(info.kickOffTime)} UTC`}</div>
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-2 mt-4">
-                        <div>
-                            <div className="text-gray-500 text-[12px]">Analyst Pick:</div>
-                            <div className="font-bold text-[16px]">{info.pickType} {info.pick}</div>
-                        </div>
-                        <div>
-                            <div className="text-gray-500 text-[12px]">Analyst Confidence:</div>
-                            <div className="font-bold text-[16px]">{info.confidence}</div>  
-                        </div>
-                    </div>
-                    <div className="gap-16 mt-4 min-h-30 max-h-30 text-[14px] overflow-scroll">
-                        <div className="text-gray-500 text-[12px]">Reason:</div>
-                        <div>{info.reason.id}</div>
-                        <div>{info.reason.en}</div>
-                    </div>
+        <Card className="flex h-full flex-col p-5">
+            <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                    <Card.Title
+                        className="cursor-pointer truncate text-base font-bold hover:text-pitch-600"
+                        onClick={() => { router.push(`/notes/${info.id || info._id}`) }}
+                    >
+                        {info.title}
+                    </Card.Title>
+                    <div className="mt-0.5 text-[11px] text-faint">posted {formatDateTime(info.createdDate)}</div>
                 </div>
-                <div>
-                    <div className="text-center text-[12px] cursor-pointer underline" onClick={() => {
-                        router.push(`/notes/${info.id || info._id}`);
-                    }}>Read more</div>
+                <Chip color={pickResultChipColor(info)} size="sm">{pickResulTitle(info)}</Chip>
+            </div>
+
+            <div className="mt-3 flex items-center gap-1.5 text-xs text-muted">
+                <CalendarClock size={14} className="shrink-0" />
+                {formatDate(info.kickOffTime)} · {timeConverter(info.kickOffTime)} UTC
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-3">
+                <div className="rounded-lg bg-pitch-50/60 px-3 py-2">
+                    <div className="text-[11px] text-muted">Pick</div>
+                    <div className="truncate text-sm font-bold text-foreground">{info.pickType ? `${info.pickType} · ` : ''}{info.pick || '-'}</div>
                 </div>
-                <div className="flex gap-2 mt-4 justify-end items-center">
-                    <div className="text-left w-full">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5 text-appgrey cursor-pointer"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth={1.8}
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            onClick={() => { setOpenDialog({
-                                isOpen: true,
-                                type: 'share'
-                            })}}
-                        >
-                            <circle cx="18" cy="5" r="3" fill="currentColor" />
-                            <circle cx="6" cy="12" r="3" fill="currentColor" />
-                            <circle cx="18" cy="19" r="3" fill="currentColor" />
-                            <line x1="8.8" y1="10.4" x2="15.2" y2="6.6" />
-                            <line x1="8.8" y1="13.6" x2="15.2" y2="17.4" />
-                        </svg>
+                <div className="rounded-lg bg-pitch-50/60 px-3 py-2">
+                    <div className="text-[11px] text-muted">Confidence</div>
+                    <div className="flex items-center gap-2">
+                        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-line">
+                            <div className="h-full rounded-full bg-pitch-500" style={{ width: `${confidence * 10}%` }} />
+                        </div>
+                        <span className="text-sm font-bold text-foreground">{confidence}</span>
                     </div>
-                    <div className="text-right">
-                        <button
-                            onClick={() => {
-                                navigator.clipboard.writeText(generatedPost);
-                                alert("Copied to clipboard!");
-                            }}
-                            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-[12px] font-bold"
-                        >Copy</button>
-                    </div>
-                    <div className="text-right">
-                        <button
-                            onClick={() => { onClick() }}
-                            className="bg-yellow-400 text-white px-4 py-2 rounded hover:bg-yellow-500 text-[12px] font-bold"
-                        >Edit</button>
-                    </div>
-                    <div className="text-right">
-                        <button
-                            onClick={() => { setOpenDialog({
-                                isOpen: true,
-                                type: 'delete'
-                            }) }}
-                            className="bg-red-400 text-white px-4 py-2 rounded hover:bg-red-500 text-[12px] font-bold"
-                        >Delete</button>
-                    </div>
-                    {/* <div className="text-right">
-                        <button
-                            onClick={() => {
-                                navigator.clipboard.writeText(generatedPost);
-                                alert("Copied to clipboard!");
-                            }}
-                            className="bg-blue-400 text-white px-4 py-2 rounded hover:bg-blue-500 text-[10px] font-bold"
-                        >Send Telegram</button>
-                    </div> */}
                 </div>
             </div>
+
+            <div className="mt-3 flex-grow">
+                <div className="text-[11px] text-muted">Reason</div>
+                <p className="mt-0.5 line-clamp-3 text-sm text-foreground/90">{info.reason.en || info.reason.id || '-'}</p>
+            </div>
+
+            <div className="mt-4 flex items-center justify-between border-t border-line pt-3">
+                <div className="flex items-center gap-1">
+                    <Tooltip>
+                        <Button isIconOnly variant="ghost" size="sm" aria-label="Share as image"
+                            onPress={() => { setOpenDialog({ isOpen: true, type: 'share' }) }}>
+                            <Share2 size={15} />
+                        </Button>
+                        <Tooltip.Content>Share as image</Tooltip.Content>
+                    </Tooltip>
+                    <Tooltip>
+                        <Button isIconOnly variant="ghost" size="sm" aria-label="Copy note text"
+                            onPress={() => {
+                                navigator.clipboard.writeText(generatedPost);
+                                toast.success("Copied to clipboard")
+                            }}>
+                            <Copy size={15} />
+                        </Button>
+                        <Tooltip.Content>Copy note text</Tooltip.Content>
+                    </Tooltip>
+                </div>
+                <div className="flex items-center gap-1.5">
+                    <Button variant="secondary" size="sm" onPress={() => { onClick() }}>
+                        <Pencil size={13} />
+                        Edit
+                    </Button>
+                    <Button isIconOnly variant="danger-soft" size="sm" aria-label="Delete note"
+                        onPress={() => { setOpenDialog({ isOpen: true, type: 'delete' }) }}>
+                        <Trash2 size={15} />
+                    </Button>
+                </div>
+            </div>
+
             <DialogComponent open={openDialog.isOpen} setOpenDialog={() => {
-                setOpenDialog({
-                    isOpen: false, type: ''
-                })
+                setOpenDialog({ isOpen: false, type: '' })
             }}>
                 {
                     openDialog.type == 'share' &&
@@ -140,7 +112,7 @@ function MatchCard (props: MatchCardProps) {
                     openDialog.type == 'delete' &&
                     <DeleteForm noteId={info.id || info._id || ''} closeDialog={() => { setOpenDialog({
                         isOpen: false, type: ''
-                    }) }}/>
+                    }) }} callback={onChanged}/>
                 }
             </DialogComponent>
         </Card>
@@ -150,6 +122,7 @@ function MatchCard (props: MatchCardProps) {
 export default MatchCard
 
 interface MatchCardProps {
-    info: MatchNotes, 
-    onClick: any
+    info: MatchNotes,
+    onClick: any,
+    onChanged?: () => void
 }

@@ -51,13 +51,10 @@ export async function deleteNote (noteId: number, callback?: any) {
 }
 
 export async function syncNotes () {
-    console.log('here syncNotes')
     const notes = await loadNotes() || []
     let newNotesList = []
-    console.log('here notes', notes)
     for (let i = 0; i < notes.length; i ++) {
         let { pick, pickType, _id, user, isSynced, ...newNotes } = notes[i]
-        console.log('here note', notes[i])
         const res = await client.post('/notes/create', {
             ...newNotes,
             confidence: Number(notes[i].confidence || 1),

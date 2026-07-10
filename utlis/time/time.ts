@@ -1,16 +1,29 @@
 export const timeConverter = (kickOffTime: Date) => {
-    const localTime = new Date(kickOffTime); // `kickoffTime` is already a JS Date
-    const utcTime = localTime.toISOString().substring(11, 16); // "14:30" from UTC
+    const localTime = new Date(kickOffTime);
+    return localTime.toISOString().substring(11, 16); // "HH:mm" in UTC
+}
 
-    const wibFormatter = new Intl.DateTimeFormat('id-ID', {
-        timeZone: 'Asia/Jakarta',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-    });
-    const wibTime = wibFormatter.format(localTime); // e.g., "21.30"
+const pad = (n: number) => String(n).padStart(2, '0')
 
-    const formattedKickoffText = utcTime;
+/** "YYYY-MM-DD" in local time */
+export const formatDate = (value: Date | string | null | undefined) => {
+    if (!value) { return '-' }
+    const d = new Date(value)
+    if (isNaN(d.getTime())) { return '-' }
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+}
 
-    return formattedKickoffText
+/** "YYYY-MM-DD HH:mm" in local time */
+export const formatDateTime = (value: Date | string | null | undefined) => {
+    if (!value) { return '-' }
+    const d = new Date(value)
+    if (isNaN(d.getTime())) { return '-' }
+    return `${formatDate(d)} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+/** "YYYY-MM-DDTHH:mm" for <input type="datetime-local"> */
+export const toDatetimeLocal = (value: Date | string | null | undefined): string => {
+    let d = value ? new Date(value) : new Date()
+    if (isNaN(d.getTime())) { d = new Date() }
+    return `${formatDate(d)}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }

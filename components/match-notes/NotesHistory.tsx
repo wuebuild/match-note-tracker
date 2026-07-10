@@ -1,78 +1,138 @@
 'use client'
+import { useCallback, useEffect, useState } from "react"
+import { Button, Card, Skeleton } from "@heroui/react";
+import { Plus, NotebookPen } from "lucide-react";
+import { toast } from "react-toastify";
+
 import MatchCard from "@/components/match-notes/MatchCard"
-import { loadNotes } from "@/utlis/storage/notes"
-import { useEffect, useState } from "react"
 import MatchForm from "@/components/match-notes/MatchForm";
 import DialogComponent from "../tailwind/DialogComponent";
-import Image from "next/image";
+import { loadNotes } from "@/utlis/storage/notes"
 import { loadListNotes } from "@/service/notesService";
 
-export default function NotesHistory ({
-
-}) {
+export default function NotesHistory () {
 
     const [ isLoading, setIsLoading ] = useState(true)
     const [ editData, setEditData ] = useState<MatchNotes|null>()
     const [ openDialog, setOpenDialog ] = useState(false)
     const [ matchNotes, setMatchNotes ] = useState<MatchNotes[]>([])
-    
-    useEffect(() => { loadMyMatchNotes() }, [])
 
-    const loadMyMatchNotes = async () => {
+    const loadMyMatchNotes = useCallback(async () => {
         const session = localStorage.getItem('mgm_access_token')
-        if (session) { 
+        if (session) {
             const data = await loadListNotes()
-            if (data) { setMatchNotes(data.data) }
+            if (data) { setMatchNotes(data.data || []) }
         } else {
             const data = await loadNotes()
-            if (data) { setMatchNotes(data) }
+            setMatchNotes(data || [])
         }
         setIsLoading(false)
-    }
+    }, [])
+
+    useEffect(() => { loadMyMatchNotes() }, [loadMyMatchNotes])
 
     useEffect(() => {
         if (editData) { setOpenDialog(true) }
     }, [editData])
 
+    const closeDialog = () => {
+        setOpenDialog(false)
+        setEditData(null)
+    }
+
+    const onNoteSaved = () => {
+        closeDialog()
+        toast.success('Note saved')
+        loadMyMatchNotes()
+    }
+
+    const totals = {
+        picks: matchNotes.length,
+        wins: matchNotes.filter(n => n.pickResult && ['true', 'right'].includes(String(n.pickResult).toLowerCase())).length,
+        settled: matchNotes.filter(n => n.pickResult != null).length,
+    }
+    const winRate = totals.settled ? Math.round((totals.wins / totals.settled) * 100) : null
+
     return (
         <>
-            <div className="flex items-center gap-[16px] mb-4">
-                <div className="font-bold text-[24px]">My Notes</div>
-                <div onClick={() => {
-                    setOpenDialog(true)
-                }}><button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-[12px] font-bold">Create Notes</button></div>
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight">My Notes</h1>
+                    <p className="text-sm text-muted">Your prediction journal, match by match.</p>
+                </div>
+                <Button onPress={() => { setOpenDialog(true) }}>
+                    <Plus size={16} />
+                    New note
+                </Button>
             </div>
-            {
-                (!isLoading && matchNotes.length == 0) &&
-                <div className="text-center w-full h-full mt-32">
-                    <Image className="mx-auto my-auto" src={"/placeholder.png"} width={80} height={80} alt={"placeholder"} />
-                    <div>Notes is empty</div>
+
+            {/* Stats */}
+            {!isLoading && matchNotes.length > 0 &&
+                <div className="mb-6 grid grid-cols-3 gap-3 sm:max-w-md">
+                    <Card className="px-4 py-3">
+                        <div className="text-[11px] uppercase tracking-wide text-muted">Picks</div>
+                        <div className="text-xl font-bold">{totals.picks}</div>
+                    </Card>
+                    <Card className="px-4 py-3">
+                        <div className="text-[11px] uppercase tracking-wide text-muted">Correct</div>
+                        <div className="text-xl font-bold text-win">{totals.wins}</div>
+                    </Card>
+                    <Card className="px-4 py-3">
+                        <div className="text-[11px] uppercase tracking-wide text-muted">Win rate</div>
+                        <div className="text-xl font-bold">{winRate != null ? `${winRate}%` : '—'}</div>
+                    </Card>
                 </div>
             }
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[16px] w-[100%]">
-                {   
-                    matchNotes.map((v, index) => {
-                        return (
-                            <MatchCard key={index} info={v} onClick={() => {
-                                setEditData(v)
-                            }} />
-                        )
-                    })
+
+            {/* Loading skeletons */}
+            {isLoading &&
+                <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {[...Array(4)].map((_, i) => (
+                        <Card key={i} className="flex flex-col gap-3 p-5">
+                            <Skeleton className="h-5 w-3/4" />
+                            <Skeleton className="h-3 w-1/2" />
+                            <div className="grid grid-cols-2 gap-3">
+                                <Skeleton className="h-12" />
+                                <Skeleton className="h-12" />
+                            </div>
+                            <Skeleton className="h-16" />
+                        </Card>
+                    ))}
+                </div>
+            }
+
+            {/* Empty state */}
+            {!isLoading && matchNotes.length === 0 &&
+                <Card className="mx-auto mt-10 flex w-full max-w-md flex-col items-center gap-3 p-10 text-center">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-pitch-50 text-pitch-600">
+                        <NotebookPen size={22} />
+                    </div>
+                    <div className="text-base font-bold">No match notes yet</div>
+                    <p className="text-sm text-muted">
+                        Write your first prediction before kickoff — pick, confidence, and the reasoning behind it.
+                    </p>
+                    <Button className="mt-2" onPress={() => { setOpenDialog(true) }}>
+                        <Plus size={16} />
+                        Create your first note
+                    </Button>
+                </Card>
+            }
+
+            <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {
+                    matchNotes.map((v, index) => (
+                        <MatchCard
+                            key={v.id || v._id || index}
+                            info={v}
+                            onClick={() => { setEditData(v) }}
+                            onChanged={() => { toast.success('Note deleted'); loadMyMatchNotes() }}
+                        />
+                    ))
                 }
             </div>
-            <DialogComponent open={openDialog} setOpenDialog={() => {
-                setOpenDialog(false)
-                setEditData(null)
-            }}>
-                <div>
-                    <div className="cursor-pointer text-right pb-4 sticky" onClick={() => {
-                        setOpenDialog(false)
-                        setEditData(null)
-                    }}>X</div>
-                    <div className="pl-1 pr-1 overflow-auto">
-                        <MatchForm data={editData || null}/>
-                    </div>
-                </div>
+
+            <DialogComponent open={openDialog} setOpenDialog={closeDialog}>
+                <MatchForm data={editData || null} onSaved={onNoteSaved}/>
             </DialogComponent>
         </>
     )

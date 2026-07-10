@@ -1,38 +1,45 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import CreatableSelect from 'react-select/creatable';
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import Select from 'react-select';
-import { setValue } from '@/utlis/reactSelect';
+import { Button, Description, Input, Label, ListBox, Select, Slider, TextArea, TextField } from '@heroui/react';
 import { saveNote, updateNote } from '@/utlis/storage/notes';
 import { createNotes, updateNotes } from '@/service/notesService';
+import { toDatetimeLocal } from '@/utlis/time/time';
+
+const pickTypeOptions = [
+    { value: '1', label: '1x2' },
+    { value: '2', label: 'Over/Under' },
+]
+
+const winnerOptions = [
+    { value: 'home', label: 'Home' },
+    { value: 'away', label: 'Away' },
+    { value: 'draw', label: 'Draw' }
+];
+
+const overUnderOptions = [
+    { value: 'ov1', label: "Over 2.5"},
+    { value: 'ov2', label: "Over 3.5" },
+    { value: 'ov3', label: "Over 4.5" },
+    { value: 'un1', label: "Under 2.5"},
+    { value: 'un2', label: "Under 3.5" },
+    { value: 'un3', label: "Under 4.5" },
+];
+
+const pickResultOptions = [
+    { value: 'true', label: 'Right — I called it' },
+    { value: 'false', label: 'Wrong — bad call' },
+]
+
+const CUSTOM_PICK = '__custom__'
+
+const bilingualToString = (value: any) =>
+    typeof value === 'object' && value !== null ? (value.en || value.id || '') : (value || '')
 
 function MatchForm(props: MatchFormProps) {
 
-    const pickTypeOptions = [
-        { value: 1, label: '1x2' },
-        { value: 2, label: 'Over/Under' },
-    ]
-
-    const winnerOptions = [
-        { value: 'home', label: 'Home' },
-        { value: 'away', label: 'Away' },
-        { value: 'draw', label: 'Draw' }
-    ];
-
-    const overUnderOptions = [
-        { value: 'ov1', label: "Over 2.5"},
-        { value: 'ov2', label: "Over 3.5" },
-        { value: 'ov3', label: "Over 4.5" },
-        { value: 'un1', label: "Under 2.5"},
-        { value: 'un2', label: "Under 3.5" },
-        { value: 'un3', label: "Under 4.5" },
-    ];
-
-    const [ defaultOptions, setDefaultOptions ] = useState<{value: string, label: string}[]>([])
-    // let defaultOptions : {value: string, label: string}[] = []
+    const [ isSaving, setIsSaving ] = useState(false)
+    const [ isCustomPick, setIsCustomPick ] = useState(false)
 
     const [ pickForm, setPickForm ] = useState<MatchNotes>({
         id: null,
@@ -42,12 +49,8 @@ function MatchForm(props: MatchFormProps) {
         pickType: "",
         pick: "",
         pickInfo: "",
-        confidence: 10,
-        reason: {
-            id: "",
-            en: "",
-            idn: ""
-        },
+        confidence: 7,
+        reason: { id: "", en: "", idn: "" },
         kickOffTime: new Date(),
         pickResult: null,
         result: "",
@@ -57,30 +60,31 @@ function MatchForm(props: MatchFormProps) {
         isSynced: false
     })
 
+    const isEditing = Boolean(pickForm.id || pickForm._id)
+    const pickOptions = String(pickForm.pickTypeId) === '1' ? winnerOptions
+        : String(pickForm.pickTypeId) === '2' ? overUnderOptions
+        : []
+
     const onChange = (e : any) => {
-        setPickForm(prev => ({
-            ...prev,
-            ...e
-        }))
+        setPickForm(prev => ({ ...prev, ...e }))
     }
 
     useEffect(() => {
         if (!props.data) { return; }
+        const data = props.data
         setPickForm(prev => ({
             ...prev,
-            ...props.data
+            ...data,
+            result: bilingualToString(data.result),
+            reflection: bilingualToString(data.reflection),
         }))
+        const options = String(data.pickTypeId) === '1' ? winnerOptions
+            : String(data.pickTypeId) === '2' ? overUnderOptions : []
+        setIsCustomPick(Boolean(data.pick) && !options.some(o => o.label === data.pick))
     }, [props.data])
 
-    useEffect(() => {
-        if (pickForm.pickTypeId == '1') {
-            setDefaultOptions(winnerOptions);
-        } else if (pickForm.pickTypeId == '2') {
-            setDefaultOptions(overUnderOptions);
-        } else {
-            setDefaultOptions([]);
-        }
-    }, [pickForm.pickTypeId]) // eslint-disable-next-line react-hooks/exhaustive-deps
+    const selectedPickKey = isCustomPick ? CUSTOM_PICK
+        : (pickOptions.find(o => o.label === pickForm.pick)?.value ?? null)
 
     const submitForm = async () => {
         const form = {
@@ -88,200 +92,213 @@ function MatchForm(props: MatchFormProps) {
             kickOffTime: pickForm.kickOffTime ? new Date(pickForm.kickOffTime).toISOString() : new Date()
         }
         const session = localStorage.getItem('mgm_access_token')
-        if (pickForm.id || pickForm._id) { 
-            if (session)  { 
-                await updateNotes(form)
-            } else { updateNote(form)  }
-            // window.location.reload()
-        } else { 
-            if (session) {
-                await createNotes(form)
-            } else { saveNote(form) }
+        setIsSaving(true)
+        try {
+            if (isEditing) {
+                if (session) { await updateNotes(form, props.onSaved) }
+                else { updateNote(form, props.onSaved) }
+            } else {
+                if (session) { await createNotes(form, props.onSaved) }
+                else { saveNote(form, props.onSaved) }
+            }
+        } finally {
+            setIsSaving(false)
         }
     }
 
     return (
-        <div className='w-full md:p-0'>
-            <div className={`grid ${(pickForm.id || pickForm._id) ? 'grid-cols-1' : 'grid-cols-1'}`}>
-                <div className='grid gap-[16px]'>
-                    <div>
-                        <div className="w-full">
-                            <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold" htmlFor="grid-password">
-                                Match Title
-                            </label>
-                            <input className="appearance-none block w-full text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" 
-                                value={pickForm.title} onChange={(e) => { onChange({title: e.currentTarget.value}) }} type="text" placeholder="Manchester United vs Tottenham"/>
-                        </div>
-                    </div>
-                    <div>
-                        <div className="w-full md:mb-0">
-                            <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold" htmlFor="grid-password">
-                                Kick Off Time
-                            </label>
-                            <DatePicker
-                                className="h-full w-full resize-none rounded-md border border-gray-200 bg-transparent px-3 py-3 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                                selected={pickForm.kickOffTime}
-                                onChange={(date) => onChange({kickOffTime: date})}
-                                showTimeSelect
-                                dateFormat="YYYY-MM-dd HH:mm"
-                            />
-                            {/* <p className="text-gray-600 text-xs italic">Your confidence for your pick is {pickForm.confidence}</p> */}
-                        </div>
-                    </div>
-                    <div>
-                        <div className="w-full">
-                            <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold" htmlFor="grid-password">
-                                Pick Type
-                            </label>
-                            <div className="w-full">
-                                <Select
-                                    classNames={{
-                                        control: () => 'h-full w-full resize-none rounded-md border border-gray-200 bg-transparent px-1 py-1 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50',
-                                    }}
-                                    value={setValue(pickForm.pickTypeId, pickTypeOptions)}
-                                    isClearable
-                                    options={pickTypeOptions}
-                                    onChange={(newValue : any) => onChange({pickTypeId: newValue.value, pickType: newValue.label, pick: null, pickInfo: null})}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <div className="w-full">
-                            <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold" htmlFor="grid-password">
-                                Pick
-                            </label>
-                            <div className="w-full">
-                                <CreatableSelect
-                                    classNames={{
-                                        control: () => 'h-full w-full resize-none rounded-md border border-gray-200 bg-transparent px-1 py-1 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50',
-                                    }}
-                                    value={setValue(pickForm.pick, defaultOptions)}
-                                    isClearable
-                                    options={defaultOptions}
-                                    onChange={(newValue : any) => onChange({pickInfo: newValue.value, pick: newValue.label})}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <div className="w-full">
-                            <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold" htmlFor="grid-password">
-                                Confidence
-                            </label>
-                            <input
-                                type="range"
-                                min="0"
-                                max="10"
-                                value={pickForm.confidence}
-                                onChange={(e) => {
-                                    onChange({ confidence: e.currentTarget.value })
-                                }}
-                            />
-                            <p className="text-gray-600 text-xs italic">Your confidence for your pick is {pickForm.confidence}</p>
-                        </div>
-                    </div>
-                    <div>
-                        <div className="w-full">
-                            <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold" htmlFor="grid-password">
-                                Reason (EN)
-                            </label>
-                            <textarea
-                                className="h-full min-h-[100px] w-full resize-none rounded-md border border-gray-200 bg-transparent px-3 py-3 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                                value={pickForm.reason.en}
-                                onChange={(e) => {
-                                    onChange({ reason: { ...pickForm.reason, en: e.currentTarget.value} })
-                                }}
-                            />
-                            {/* <p className="text-gray-600 text-xs italic">Your confidence for your pick is {pickForm.confidence}</p> */}
-                        </div>
-                    </div>
-                    <div className='-mt-4'>
-                        <div className="w-full">
-                            <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold" htmlFor="grid-password">
-                                Reason (ID)
-                            </label>
-                            <textarea
-                                className="h-full min-h-[100px] w-full resize-none rounded-md border border-gray-200 bg-transparent px-3 py-3 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                                value={pickForm.reason.id}
-                                onChange={(e) => {
-                                    onChange({ reason: { ...pickForm.reason, id: e.currentTarget.value} })
-                                }}
-                            />
-                            {/* <p className="text-gray-600 text-xs italic">Your confidence for your pick is {pickForm.confidence}</p> */}
-                        </div>
-                    </div>
-                </div>
-                <div className='grid'>
-                    {
-                        (pickForm.id || pickForm._id) &&
-                        <>
-                            <div className="w-full py-2">
-                                <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold" htmlFor="grid-password">
-                                    Pick Result
-                                </label>
-                                <Select
-                                    classNames={{
-                                        control: () => 'h-full w-full resize-none rounded-md border border-gray-200 bg-transparent px-1 py-1 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50',
-                                    }}
-                                    value={setValue(pickForm.pickResult, [
-                                        {label: 'Right', value: 'true'},
-                                        {label: 'False', value: 'false'},
-                                    ])}
-                                    isClearable
-                                    options={[
-                                        {label: 'Right', value: 'true'},
-                                        {label: 'False', value: 'false'},
-                                    ]}
-                                    onChange={(newValue : any) => onChange({pickResult: newValue.value})}
-                                />
-                            </div>
-                            <div className="min-h-[100px]">
-                                <div className="w-full">
-                                    <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold" htmlFor="grid-password">
-                                        Result
-                                    </label>
-                                    <textarea
-                                        className="h-full min-h-[100px] w-full resize-none rounded-md border border-gray-200 bg-transparent px-3 py-3 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                                        value={pickForm.result}
-                                        onChange={(e) => {
-                                            onChange({ result: e.currentTarget.value })
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                            <div className="min-h-[100px]">
-                                <div className="w-full">
-                                    <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold" htmlFor="grid-password">
-                                        Reflection
-                                    </label>
-                                    <textarea
-                                        className="h-full min-h-[100px] w-full resize-none rounded-md border border-gray-200 bg-transparent px-3 py-3 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                                        value={pickForm.reflection}
-                                        onChange={(e) => {
-                                            onChange({ reflection: e.currentTarget.value })
-                                        }}
-                                    />
-                                    <p className="text-gray-600 text-xs italic">Your result & reflection can be edited when the match end</p>
-                                </div>
-                            </div>
-                        </>
-                    }
-                </div>
+        <div className='flex w-full flex-col gap-5'>
+            <div>
+                <h2 className='text-lg font-bold text-foreground'>{isEditing ? 'Update match note' : 'New match note'}</h2>
+                <p className='text-sm text-muted'>{isEditing ? 'Record the result and what you learned.' : 'Lock in your analysis before kickoff.'}</p>
             </div>
-            <div className='align-right text-right mt-8'>
-                <button className="bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded inline-flex items-center cursor-pointer"
-                    onClick={() => submitForm()}
+
+            <TextField value={pickForm.title} onChange={(v: string) => onChange({ title: v })}>
+                <Label>Match</Label>
+                <Input placeholder="Manchester United vs Tottenham" />
+            </TextField>
+
+            <TextField
+                type="datetime-local"
+                value={toDatetimeLocal(pickForm.kickOffTime)}
+                onChange={(v: string) => onChange({ kickOffTime: v ? new Date(v) : new Date() })}
+            >
+                <Label>Kick-off time</Label>
+                <Input />
+            </TextField>
+
+            <div className='grid gap-5 sm:grid-cols-2'>
+                <Select
+                    placeholder="Choose type"
+                    value={String(pickForm.pickTypeId || '') || null}
+                    onChange={(key: any) => {
+                        const option = pickTypeOptions.find(o => o.value === String(key))
+                        if (!option) { return }
+                        setIsCustomPick(false)
+                        onChange({ pickTypeId: option.value, pickType: option.label, pick: null, pickInfo: null })
+                    }}
                 >
-                    <span>Save</span>
-                </button>
+                    <Label>Pick type</Label>
+                    <Select.Trigger>
+                        <Select.Value />
+                        <Select.Indicator />
+                    </Select.Trigger>
+                    <Select.Popover>
+                        <ListBox>
+                            {pickTypeOptions.map(option => (
+                                <ListBox.Item key={option.value} id={option.value} textValue={option.label}>
+                                    {option.label}
+                                    <ListBox.ItemIndicator />
+                                </ListBox.Item>
+                            ))}
+                        </ListBox>
+                    </Select.Popover>
+                </Select>
+
+                <Select
+                    placeholder={pickOptions.length ? "Your call" : "Choose a pick type first"}
+                    isDisabled={!pickOptions.length}
+                    value={selectedPickKey}
+                    onChange={(key: any) => {
+                        if (String(key) === CUSTOM_PICK) {
+                            setIsCustomPick(true)
+                            onChange({ pick: '', pickInfo: '' })
+                            return
+                        }
+                        const option = pickOptions.find(o => o.value === String(key))
+                        if (!option) { return }
+                        setIsCustomPick(false)
+                        onChange({ pickInfo: option.value, pick: option.label })
+                    }}
+                >
+                    <Label>Pick</Label>
+                    <Select.Trigger>
+                        <Select.Value />
+                        <Select.Indicator />
+                    </Select.Trigger>
+                    <Select.Popover>
+                        <ListBox>
+                            {pickOptions.map(option => (
+                                <ListBox.Item key={option.value} id={option.value} textValue={option.label}>
+                                    {option.label}
+                                    <ListBox.ItemIndicator />
+                                </ListBox.Item>
+                            ))}
+                            <ListBox.Item id={CUSTOM_PICK} textValue="Custom pick">
+                                Custom pick…
+                                <ListBox.ItemIndicator />
+                            </ListBox.Item>
+                        </ListBox>
+                    </Select.Popover>
+                </Select>
+            </div>
+
+            {isCustomPick && (
+                <TextField value={pickForm.pick || ''} onChange={(v: string) => onChange({ pick: v, pickInfo: v })}>
+                    <Label>Custom pick</Label>
+                    <Input placeholder="e.g. Both teams to score" />
+                </TextField>
+            )}
+
+            <Slider
+                minValue={0}
+                maxValue={10}
+                step={1}
+                value={Number(pickForm.confidence)}
+                onChange={(v: any) => onChange({ confidence: v })}
+            >
+                <Label>Confidence</Label>
+                <Slider.Output />
+                <Slider.Track>
+                    <Slider.Fill />
+                    <Slider.Thumb />
+                </Slider.Track>
+            </Slider>
+
+            <div className='flex flex-col gap-2'>
+                <Label htmlFor="reason-en">Reason (English)</Label>
+                <TextArea
+                    id="reason-en"
+                    rows={3}
+                    placeholder="Why do you believe this pick is right?"
+                    value={pickForm.reason.en}
+                    onChange={(e) => onChange({ reason: { ...pickForm.reason, en: e.target.value } })}
+                />
+            </div>
+
+            <div className='flex flex-col gap-2'>
+                <Label htmlFor="reason-id">Reason (Indonesian)</Label>
+                <TextArea
+                    id="reason-id"
+                    rows={3}
+                    placeholder="Alasan analisis kamu (opsional)"
+                    value={pickForm.reason.id}
+                    onChange={(e) => onChange({ reason: { ...pickForm.reason, id: e.target.value } })}
+                />
+            </div>
+
+            {isEditing && (
+                <div className='flex flex-col gap-5 rounded-xl border border-line bg-pitch-50/50 p-4'>
+                    <div className='text-sm font-bold text-foreground'>After the match</div>
+                    <Select
+                        placeholder="How did your pick go?"
+                        value={pickForm.pickResult ?? null}
+                        onChange={(key: any) => onChange({ pickResult: String(key) })}
+                    >
+                        <Label>Pick result</Label>
+                        <Select.Trigger>
+                            <Select.Value />
+                            <Select.Indicator />
+                        </Select.Trigger>
+                        <Select.Popover>
+                            <ListBox>
+                                {pickResultOptions.map(option => (
+                                    <ListBox.Item key={option.value} id={option.value} textValue={option.label}>
+                                        {option.label}
+                                        <ListBox.ItemIndicator />
+                                    </ListBox.Item>
+                                ))}
+                            </ListBox>
+                        </Select.Popover>
+                    </Select>
+
+                    <div className='flex flex-col gap-2'>
+                        <Label htmlFor="result">Match result</Label>
+                        <TextArea
+                            id="result"
+                            rows={2}
+                            placeholder="Final score and what happened"
+                            value={pickForm.result as string}
+                            onChange={(e) => onChange({ result: e.target.value })}
+                        />
+                    </div>
+
+                    <div className='flex flex-col gap-2'>
+                        <Label htmlFor="reflection">Reflection</Label>
+                        <TextArea
+                            id="reflection"
+                            rows={3}
+                            placeholder="What did you get right or miss in your analysis?"
+                            value={pickForm.reflection as string}
+                            onChange={(e) => onChange({ reflection: e.target.value })}
+                        />
+                        <Description>Fill this in once the match ends — it&apos;s where the learning happens.</Description>
+                    </div>
+                </div>
+            )}
+
+            <div className='mt-1 flex justify-end'>
+                <Button isDisabled={isSaving || !pickForm.title} onPress={() => submitForm()}>
+                    {isSaving ? 'Saving…' : isEditing ? 'Save changes' : 'Save note'}
+                </Button>
             </div>
         </div>
-    )    
+    )
 }
 
 export default MatchForm
 
 interface MatchFormProps {
     data: MatchNotes | null
+    onSaved?: () => void
 }

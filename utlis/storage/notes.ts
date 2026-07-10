@@ -1,24 +1,16 @@
-import moment from "moment";
-
 const STORAGE_KEY = 'matchNotes';
 
-export const saveNote = (data : any) => {
-  if (process.env.NEXT_PUBLIC_STORAGE === 'local') {
-    let currData = loadNotes()
-    if (currData) { currData.push({
-      ...data,
-      _id: Date.now(),
-      createdDate: new Date()
-    }) } else { currData = [{
-      ...data,
-      _id: Date.now(),
-      createdDate: new Date()
-    }] }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(currData));
-    window.location.reload()
-  } else {
-    // next version: send to backend API
+export const saveNote = (data : any, callback?: any) => {
+  let currData = loadNotes()
+  const newNote = {
+    ...data,
+    _id: Date.now(),
+    createdDate: new Date()
   }
+  if (currData) { currData.push(newNote) } else { currData = [newNote] }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(currData));
+  if (callback) { callback(); return; }
+  window.location.reload()
 }
 
 export const loadNotes = () => {
@@ -43,12 +35,13 @@ export const deleteNoteLocal = (_id: string, callback?: any) => {
   window.location.reload()
 }
 
-export function updateNote(updatedNote: any) {
+export function updateNote(updatedNote: any, callback?: any) {
   const notes = loadNotes();
   const updated = notes.map((note: MatchNotes) =>
     note._id === updatedNote._id ? updatedNote : note
   );
   localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  if (callback) { callback(); return; }
   window.location.reload()
 }
 
