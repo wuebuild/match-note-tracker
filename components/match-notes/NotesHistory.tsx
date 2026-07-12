@@ -50,6 +50,7 @@ export default function NotesHistory () {
         picks: matchNotes.length,
         wins: matchNotes.filter(n => n.pickResult && ['true', 'right'].includes(String(n.pickResult).toLowerCase())).length,
         settled: matchNotes.filter(n => n.pickResult != null).length,
+        points: matchNotes.reduce((sum, n: any) => sum + (Number(n.pointsAwarded) || 0), 0),
     }
     const winRate = totals.settled ? Math.round((totals.wins / totals.settled) * 100) : null
 
@@ -68,7 +69,7 @@ export default function NotesHistory () {
 
             {/* Stats */}
             {!isLoading && matchNotes.length > 0 &&
-                <div className="mb-6 grid grid-cols-3 gap-3 sm:max-w-md">
+                <div className="mb-6 grid grid-cols-2 gap-3 sm:max-w-xl sm:grid-cols-4">
                     <Card className="px-4 py-3">
                         <div className="text-[11px] uppercase tracking-wide text-muted">Picks</div>
                         <div className="text-xl font-bold">{totals.picks}</div>
@@ -80,6 +81,10 @@ export default function NotesHistory () {
                     <Card className="px-4 py-3">
                         <div className="text-[11px] uppercase tracking-wide text-muted">Win rate</div>
                         <div className="text-xl font-bold">{winRate != null ? `${winRate}%` : '—'}</div>
+                    </Card>
+                    <Card className="px-4 py-3">
+                        <div className="text-[11px] uppercase tracking-wide text-muted">Points</div>
+                        <div className="text-xl font-bold text-pitch-700">{totals.points}</div>
                     </Card>
                 </div>
             }

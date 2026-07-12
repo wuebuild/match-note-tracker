@@ -3,16 +3,19 @@ import { useEffect, useState } from "react"
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Menu, X, LogOut } from "lucide-react";
+import { Menu, X, LogOut, Settings } from "lucide-react";
 import { Button } from "@heroui/react";
 
 import { signOut } from "next-auth/react";
 import DialogComponent from "../tailwind/DialogComponent";
+import SettingsDialog from "./SettingsDialog";
 import Auth from "../auth";
 
 const NAV_LINKS = [
     { href: '/', label: 'Dashboard' },
-    { href: '/notes', label: 'Match Notes' },
+    { href: '/feed', label: 'Feed' },
+    { href: '/leaderboard', label: 'Leaderboard' },
+    { href: '/notes', label: 'My Notes' },
     { href: '/teams', label: 'Teams' },
 ]
 
@@ -20,6 +23,7 @@ function Nav () {
 
     const [ isOpenMenu, setIsOpenMenu ] = useState(false)
     const [ openDialog, setOpenDialog ] = useState(false)
+    const [ openSettings, setOpenSettings ] = useState(false)
     const [ session, setSession ] = useState<string | null>(null);
     const pathName = usePathname()
 
@@ -62,10 +66,16 @@ function Nav () {
                             Sign In
                         </Button>
                         :
-                        <Button size="sm" variant="secondary" onPress={() => { signOut(); localStorage.clear() }}>
-                            <LogOut size={14} />
-                            Sign Out
-                        </Button>
+                        <>
+                            <Button isIconOnly size="sm" variant="ghost" aria-label="Settings"
+                                onPress={() => { setOpenSettings(true) }}>
+                                <Settings size={16} />
+                            </Button>
+                            <Button size="sm" variant="secondary" onPress={() => { signOut(); localStorage.clear() }}>
+                                <LogOut size={14} />
+                                Sign Out
+                            </Button>
+                        </>
                     }
                     <button
                         type="button"
@@ -89,8 +99,11 @@ function Nav () {
                     </div>
                 </div>
             }
-            <DialogComponent open={openDialog} setOpenDialog={() => { setOpenDialog(!openDialog) }} size="sm">
+            <DialogComponent open={openDialog} setOpenDialog={() => { setOpenDialog(!openDialog) }} size="sm" label="Sign in">
                 <Auth />
+            </DialogComponent>
+            <DialogComponent open={openSettings} setOpenDialog={() => { setOpenSettings(false) }} size="sm" label="Settings">
+                <SettingsDialog onSaved={() => { setOpenSettings(false) }} />
             </DialogComponent>
         </nav>
     )

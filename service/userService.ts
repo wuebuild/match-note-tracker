@@ -25,8 +25,17 @@ export async function registerUser(userInfo: AccountInfo) {
     }
 }
 
-export async function signUp(token: string) {
-    const res = await client.get('/auth/signup', {
-        data: {}
-    })
+export async function getMe () {
+    const res = await client.get('/user/me')
+    return (res.data?.data || null) as MyProfile | null
+}
+
+export async function updateSettings (settings: { name?: string, bio?: string, feedPrivacy?: string }) {
+    const res = await client.patch('/user/settings', settings)
+    return (res.data?.data || null) as MyProfile | null
+}
+
+export async function toggleFavouriteTeam (teamId: string) {
+    const res = await client.post('/user/favourite-teams/toggle', { teamId })
+    return res.data?.data as { favourite: boolean, favouriteTeams: MyProfile['favouriteTeams'] } | undefined
 }
