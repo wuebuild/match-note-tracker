@@ -21,7 +21,7 @@ export default function NotesHistory () {
         const session = localStorage.getItem('mgm_access_token')
         if (session) {
             const data = await loadListNotes()
-            if (data) { setMatchNotes(data.data || []) }
+            setMatchNotes(Array.isArray(data) ? data : [])
         } else {
             const data = await loadNotes()
             setMatchNotes(data || [])

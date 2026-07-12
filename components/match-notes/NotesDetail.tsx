@@ -36,8 +36,8 @@ function NotesDetail ({
         setLoading(true)
         const session = localStorage.getItem('mgm_access_token')
         if (session) {
-            const data = await loadNoteDetail(Number(id))
-            if (data.data) { setNote(data.data) }
+            const data = await loadNoteDetail(id)
+            if (data?.data) { setNote(data.data) }
         } else {
             const data = await loadNote(id)
             if (data) { setNote(data) }
@@ -51,7 +51,10 @@ function NotesDetail ({
         try {
             if (!localStorage.getItem('mgm_access_token')) { return true } // local notes are always editable
             const localUser = JSON.parse(localStorage.getItem('mgm_user') || '{}');
-            return localUser?.id === note?.user?.id;
+            // note.user can be a populated object or a plain ObjectId string
+            const noteUser: any = note?.user
+            const noteUserId = noteUser?.id || noteUser?._id || noteUser
+            return Boolean(localUser?.id) && String(localUser.id) === String(noteUserId ?? '');
         } catch {
             return false;
         }

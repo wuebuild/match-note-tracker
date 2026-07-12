@@ -21,7 +21,7 @@ function DeleteForm ({
         setIsDeleting(true)
         try {
             const session = localStorage.getItem('mgm_access_token')
-            if (session) { await deleteNote(Number(noteId), callback) }
+            if (session) { await deleteNote(noteId, callback) }
             else { deleteNoteLocal(noteId, callback) }
         } finally {
             setIsDeleting(false)
