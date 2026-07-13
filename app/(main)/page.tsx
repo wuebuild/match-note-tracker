@@ -7,7 +7,7 @@ const steps = [
   {
     icon: NotebookPen,
     title: "1 · Predict",
-    text: "Before kickoff, write your pick, your confidence, and — most importantly — your reasoning.",
+    text: "Before kickoff, write your pick, your confidence, and most importantly your reasoning.",
   },
   {
     icon: ClipboardList,
@@ -30,7 +30,7 @@ const features = [
   {
     icon: ShieldCheck,
     title: "No betting. Just football logic.",
-    text: "Built to replace the bet slip with an analysis journal — the thrill of being right, without losing money.",
+    text: "Built to replace the bet slip with an analysis journal. The thrill of being right, without losing money.",
   },
   {
     icon: NotebookPen,
@@ -62,7 +62,7 @@ export default function Home() {
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-base text-pitch-100/80 sm:text-lg">
             Write your prediction and reasoning before kickoff, record the result after, and earn
-            leaderboard points when you call it right. All the conviction — none of the losses.
+            leaderboard points when you call it right. All the conviction, none of the losses.
           </p>
           <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
             <Link
@@ -72,10 +72,10 @@ export default function Home() {
               Start your first note
             </Link>
             <Link
-              href="/teams"
+              href="/app"
               className={buttonVariants({ variant: "ghost", size: "lg", className: "text-pitch-100 hover:bg-pitch-800 hover:text-white" })}
             >
-              Browse teams
+              Open the app
             </Link>
           </div>
           <p className="mt-4 text-xs text-pitch-100/50">Free · No account needed to start</p>
@@ -122,7 +122,7 @@ export default function Home() {
       <section className="mx-auto max-w-4xl px-4 py-16 text-center sm:px-6">
         <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Your next match starts a streak</h2>
         <p className="mx-auto mt-2 max-w-lg text-sm text-muted">
-          One note per match is all it takes. Your future self — and the leaderboard — will thank you.
+          One note per match is all it takes. Your future self and the leaderboard will thank you.
         </p>
         <Link href="/notes" className={buttonVariants({ size: "lg", className: "mt-7" })}>
           Create a match note

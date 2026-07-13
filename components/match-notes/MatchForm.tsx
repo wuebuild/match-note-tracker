@@ -27,8 +27,8 @@ const overUnderOptions = [
 ];
 
 const pickResultOptions = [
-    { value: 'true', label: 'Right — I called it' },
-    { value: 'false', label: 'Wrong — bad call' },
+    { value: 'true', label: 'Right, I called it' },
+    { value: 'false', label: 'Wrong, bad call' },
 ]
 
 const CUSTOM_PICK = '__custom__'
@@ -282,7 +282,7 @@ function MatchForm(props: MatchFormProps) {
                             value={pickForm.reflection as string}
                             onChange={(e) => onChange({ reflection: e.target.value })}
                         />
-                        <Description>Fill this in once the match ends — it&apos;s where the learning happens.</Description>
+                        <Description>Fill this in once the match ends. It&apos;s where the learning happens.</Description>
                     </div>
                 </div>
             )}

@@ -3,16 +3,16 @@ import { useEffect, useState } from "react"
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Menu, X, LogOut, Settings } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@heroui/react";
 
-import { signOut } from "next-auth/react";
 import DialogComponent from "../tailwind/DialogComponent";
 import SettingsDialog from "./SettingsDialog";
+import ProfileMenu from "./ProfileMenu";
 import Auth from "../auth";
 
 const NAV_LINKS = [
-    { href: '/', label: 'Dashboard' },
+    { href: '/app', label: 'Dashboard' },
     { href: '/feed', label: 'Feed' },
     { href: '/leaderboard', label: 'Leaderboard' },
     { href: '/notes', label: 'My Notes' },
@@ -26,6 +26,7 @@ function Nav () {
     const [ openSettings, setOpenSettings ] = useState(false)
     const [ session, setSession ] = useState<string | null>(null);
     const pathName = usePathname()
+    const isLanding = pathName === '/'
 
     useEffect(() => {
         const accessToken = localStorage.getItem('mgm_access_token')
@@ -52,45 +53,42 @@ function Nav () {
                         <Image className="h-8 w-8 rounded-lg" src="/logo_.png" width={32} height={32} alt="Match Note Maker"/>
                         <span className="text-[15px] font-bold tracking-tight text-ink">Match Note <span className="text-pitch-600">Maker</span></span>
                     </Link>
-                    <div className="hidden items-center gap-1 sm:flex">
-                        {NAV_LINKS.map((link) => (
-                            <Link key={link.href} href={link.href} className={linkClass(link.href)}>{link.label}</Link>
-                        ))}
-                    </div>
+                    {!isLanding &&
+                        <div className="hidden items-center gap-1 sm:flex">
+                            {NAV_LINKS.map((link) => (
+                                <Link key={link.href} href={link.href} className={linkClass(link.href)}>{link.label}</Link>
+                            ))}
+                        </div>
+                    }
                 </div>
 
                 <div className="flex items-center gap-2">
-                    {
-                        !session ?
-                        <Button size="sm" onPress={() => { setOpenDialog(true) }}>
-                            Sign In
-                        </Button>
-                        :
-                        <>
-                            <Button isIconOnly size="sm" variant="ghost" aria-label="Settings"
-                                onPress={() => { setOpenSettings(true) }}>
-                                <Settings size={16} />
-                            </Button>
-                            <Button size="sm" variant="secondary" onPress={() => { signOut(); localStorage.clear() }}>
-                                <LogOut size={14} />
-                                Sign Out
-                            </Button>
-                        </>
+                    {isLanding &&
+                        <Link href="/app" className="hidden text-sm font-medium text-muted hover:text-pitch-700 sm:block">
+                            Open app
+                        </Link>
                     }
-                    <button
-                        type="button"
-                        className="inline-flex items-center justify-center rounded-lg p-2 text-muted hover:bg-pitch-50 hover:text-pitch-700 sm:hidden"
-                        aria-controls="mobile-menu"
-                        aria-expanded={isOpenMenu}
-                        onClick={() => { setIsOpenMenu(!isOpenMenu) }}
-                    >
-                        <span className="sr-only">Open main menu</span>
-                        {isOpenMenu ? <X size={22} /> : <Menu size={22} />}
-                    </button>
+                    {
+                        !session
+                            ? <Button size="sm" onPress={() => { setOpenDialog(true) }}>Sign In</Button>
+                            : <ProfileMenu onOpenSettings={() => { setOpenSettings(true) }} />
+                    }
+                    {!isLanding &&
+                        <button
+                            type="button"
+                            className="inline-flex items-center justify-center rounded-lg p-2 text-muted hover:bg-pitch-50 hover:text-pitch-700 sm:hidden"
+                            aria-controls="mobile-menu"
+                            aria-expanded={isOpenMenu}
+                            onClick={() => { setIsOpenMenu(!isOpenMenu) }}
+                        >
+                            <span className="sr-only">Open main menu</span>
+                            {isOpenMenu ? <X size={22} /> : <Menu size={22} />}
+                        </button>
+                    }
                 </div>
             </div>
             {
-                isOpenMenu &&
+                isOpenMenu && !isLanding &&
                 <div className="border-t border-line bg-white sm:hidden" id="mobile-menu">
                     <div className="space-y-1 px-4 py-3">
                         {NAV_LINKS.map((link) => (

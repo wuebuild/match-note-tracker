@@ -39,7 +39,7 @@ function FeedCard ({ note }: { note: FeedNote }) {
                 <div className="mt-4 flex flex-grow flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-line bg-pitch-50/40 p-5 text-center">
                     <Lock size={18} className="text-pitch-600" />
                     <div className="text-sm font-semibold text-ink">Pick locked until kickoff</div>
-                    <p className="text-xs text-muted">Analysis opens when the match starts — no copy-picking here.</p>
+                    <p className="text-xs text-muted">Analysis opens when the match starts. No copy-picking here.</p>
                 </div>
             ) : (
                 <>

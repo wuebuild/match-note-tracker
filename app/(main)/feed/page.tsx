@@ -52,7 +52,7 @@ export default function Feed() {
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">Community Feed</h1>
-                    <p className="text-sm text-muted">What the community is calling — picks unlock at kickoff.</p>
+                    <p className="text-sm text-muted">What the community is calling. Picks unlock at kickoff.</p>
                 </div>
                 <div className="flex gap-1 rounded-xl border border-line bg-white p-1">
                     {FILTERS.filter(f => !f.needsAuth || session).map(f => (

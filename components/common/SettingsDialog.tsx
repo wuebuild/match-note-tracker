@@ -6,9 +6,9 @@ import { getMe, updateSettings } from "@/service/userService";
 import { isPushSupported, getCurrentSubscription, enablePush, disablePush } from "@/service/pushService";
 
 const PRIVACY_OPTIONS = [
-    { value: 'public', label: 'Public — everyone sees my notes in the feed' },
-    { value: 'supporters', label: 'Supporters only — paid supporters see my feed' },
-    { value: 'private', label: 'Private — only I can see my notes' },
+    { value: 'public', label: 'Public: everyone sees my notes in the feed' },
+    { value: 'supporters', label: 'Supporters only: paid supporters see my feed' },
+    { value: 'private', label: 'Private: only I can see my notes' },
 ]
 
 function SettingsDialog ({ onSaved }: { onSaved?: () => void }) {
@@ -115,7 +115,7 @@ function SettingsDialog ({ onSaved }: { onSaved?: () => void }) {
                             Match notifications
                         </Switch.Content>
                     </Switch>
-                    <p className="mt-1.5 text-xs text-muted">Get notified when your picks settle — WIN or LOSE, with points.</p>
+                    <p className="mt-1.5 text-xs text-muted">Get notified when your picks settle, WIN or LOSE, with points.</p>
                 </div>
             }
 

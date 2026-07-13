@@ -114,7 +114,7 @@ export default function NotesHistory () {
                     </div>
                     <div className="text-base font-bold">No match notes yet</div>
                     <p className="text-sm text-muted">
-                        Write your first prediction before kickoff — pick, confidence, and the reasoning behind it.
+                        Write your first prediction before kickoff: pick, confidence, and the reasoning behind it.
                     </p>
                     <Button className="mt-2" onPress={() => { setOpenDialog(true) }}>
                         <Plus size={16} />

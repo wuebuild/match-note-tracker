@@ -61,7 +61,7 @@ export default function Teams() {
       <div className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight">Teams</h1>
         <p className="text-sm text-muted">
-          {session ? 'Tap the heart to follow your clubs — they power the "My teams" feed filter.' : 'Browse clubs to reference in your match notes.'}
+          {session ? 'Tap the heart to follow your clubs. They power the "My teams" feed filter.' : 'Browse clubs to reference in your match notes.'}
         </p>
       </div>
 

@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Match Note Maker',
     short_name: 'MatchNotes',
-    description: 'Track your football analysis instead of betting — predict, reflect, earn points.',
+    description: 'Track your football analysis instead of betting. Predict, reflect, and earn points.',
     start_url: '/notes',
     display: 'standalone',
     background_color: '#f6f7f4',
