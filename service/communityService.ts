@@ -27,5 +27,7 @@ export async function unfollowAnalyst (analystId: string) {
 
 export async function subscribeToAnalyst (analystId: string) {
     const res = await client.post('/membership/subscribe', { analystId })
-    return !res.data?.error
+    if (res.data?.error) { return null }
+    // with Midtrans enabled the membership is pending and includes a paymentUrl
+    return res.data?.data as { status: string, paymentUrl?: string } | null
 }

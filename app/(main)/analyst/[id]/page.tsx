@@ -39,9 +39,16 @@ export default function AnalystPage(props: { params: Promise<{ id: string }> }) 
 
     const support = async () => {
         if (!profile) { return }
-        const ok = await subscribeToAnalyst(profile.analyst._id)
-        if (ok) { toast.success(`You now support ${profile.analyst.name}`); loadProfile() }
-        else { toast.error('Could not subscribe') }
+        const result = await subscribeToAnalyst(profile.analyst._id)
+        if (!result) { toast.error('Could not subscribe'); return }
+        if (result.paymentUrl) {
+            // Midtrans Snap hosted page; membership activates via webhook after payment
+            window.open(result.paymentUrl, '_blank', 'noopener')
+            toast.info('Complete the payment to activate your support')
+            return
+        }
+        toast.success(`You now support ${profile.analyst.name}`)
+        loadProfile()
     }
 
     if (isLoading) {

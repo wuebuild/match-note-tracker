@@ -5,6 +5,7 @@ import Nav from "@/components/common/Nav";
 import Footer from "@/components/common/Footer";
 import { ToastContainer } from "react-toastify";
 import { NotesSyncer } from "@/components/match-notes/NotesSync";
+import { ServiceWorkerRegistrar } from "@/components/common/ServiceWorkerRegistrar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,6 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+          <ServiceWorkerRegistrar/>
           <NotesSyncer/>
           <ToastContainer position="top-right" />
           <Nav />

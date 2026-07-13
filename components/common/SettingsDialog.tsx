@@ -1,8 +1,9 @@
 'use client'
 import { useEffect, useState } from "react";
-import { Button, Description, Input, Label, ListBox, Select, TextField } from "@heroui/react";
+import { Button, Description, Input, Label, ListBox, Select, Switch, TextField } from "@heroui/react";
 import { toast } from "react-toastify";
 import { getMe, updateSettings } from "@/service/userService";
+import { isPushSupported, getCurrentSubscription, enablePush, disablePush } from "@/service/pushService";
 
 const PRIVACY_OPTIONS = [
     { value: 'public', label: 'Public — everyone sees my notes in the feed' },
@@ -15,6 +16,9 @@ function SettingsDialog ({ onSaved }: { onSaved?: () => void }) {
     const [ name, setName ] = useState('')
     const [ feedPrivacy, setFeedPrivacy ] = useState('public')
     const [ isSaving, setIsSaving ] = useState(false)
+    const [ pushSupported, setPushSupported ] = useState(false)
+    const [ pushEnabled, setPushEnabled ] = useState(false)
+    const [ pushBusy, setPushBusy ] = useState(false)
 
     useEffect(() => {
         getMe().then((me) => {
@@ -23,7 +27,29 @@ function SettingsDialog ({ onSaved }: { onSaved?: () => void }) {
                 setFeedPrivacy(me.feedPrivacy || 'public')
             }
         }).catch(() => {})
+        if (isPushSupported()) {
+            setPushSupported(true)
+            getCurrentSubscription().then((sub) => setPushEnabled(Boolean(sub))).catch(() => {})
+        }
     }, [])
+
+    const togglePush = async (selected: boolean) => {
+        setPushBusy(true)
+        try {
+            if (selected) {
+                const ok = await enablePush()
+                setPushEnabled(ok)
+                if (ok) { toast.success('Match notifications on') }
+                else { toast.error('Could not enable notifications (permission denied or server not configured)') }
+            } else {
+                await disablePush()
+                setPushEnabled(false)
+                toast.success('Match notifications off')
+            }
+        } finally {
+            setPushBusy(false)
+        }
+    }
 
     const save = async () => {
         setIsSaving(true)
@@ -78,6 +104,20 @@ function SettingsDialog ({ onSaved }: { onSaved?: () => void }) {
                 </Select.Popover>
                 <Description>Picks always stay locked for others until kickoff, whatever you choose.</Description>
             </Select>
+
+            {pushSupported &&
+                <div className="rounded-xl border border-line bg-pitch-50/40 px-4 py-3">
+                    <Switch isSelected={pushEnabled} onChange={togglePush} isDisabled={pushBusy}>
+                        <Switch.Content>
+                            <Switch.Control>
+                                <Switch.Thumb />
+                            </Switch.Control>
+                            Match notifications
+                        </Switch.Content>
+                    </Switch>
+                    <p className="mt-1.5 text-xs text-muted">Get notified when your picks settle — WIN or LOSE, with points.</p>
+                </div>
+            }
 
             <div className="flex justify-end">
                 <Button isDisabled={isSaving || !name.trim()} onPress={save}>
