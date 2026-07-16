@@ -2,11 +2,12 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Card, Skeleton } from "@heroui/react"
-import { NotebookPen, Newspaper, Trophy, Shield, User, Plus } from "lucide-react"
+import { NotebookPen, Newspaper, Trophy, Shield, User, Plus, CalendarDays } from "lucide-react"
 import { loadListNotes } from "@/service/notesService"
 import { loadNotes } from "@/utlis/storage/notes"
 
 const TILES = [
+    { href: '/fixtures', label: 'Fixtures', desc: 'Pick a match to analyze', icon: CalendarDays },
     { href: '/notes', label: 'My Notes', desc: 'Your prediction journal', icon: NotebookPen },
     { href: '/feed', label: 'Community Feed', desc: 'See what analysts are calling', icon: Newspaper },
     { href: '/leaderboard', label: 'Leaderboard', desc: 'See where you rank', icon: Trophy },

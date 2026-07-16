@@ -30,9 +30,9 @@ export default function ProfileMenu({ onOpenSettings }: { onOpenSettings: () => 
 
     return (
         <Dropdown>
-            <Dropdown.Trigger variant="ghost" size="sm" aria-label="Profile menu" className="gap-2 pl-1 pr-2.5">
+            <Dropdown.Trigger aria-label="Profile menu" className="inline-flex items-center gap-2 rounded-lg py-1 pl-1 pr-2.5 text-sm font-semibold text-ink transition-colors hover:bg-pitch-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pitch-500 cursor-pointer">
                 <span className="flex h-7 w-7 items-center justify-center rounded-full bg-pitch-600 text-xs font-bold text-white">{initial}</span>
-                <span className="hidden max-w-[120px] truncate text-sm font-semibold text-ink sm:inline">{name}</span>
+                <span className="hidden max-w-[120px] truncate sm:inline">{name}</span>
             </Dropdown.Trigger>
             <Dropdown.Popover placement="bottom end">
                 <Dropdown.Menu onAction={handleAction}>

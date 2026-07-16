@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Button, Description, Input, Label, ListBox, Select, Slider, TextArea, TextField } from '@heroui/react';
+import { Link2, Lock } from 'lucide-react';
 import { saveNote, updateNote } from '@/utlis/storage/notes';
 import { createNotes, updateNotes } from '@/service/notesService';
 import { toDatetimeLocal } from '@/utlis/time/time';
@@ -86,10 +87,20 @@ function MatchForm(props: MatchFormProps) {
     const selectedPickKey = isCustomPick ? CUSTOM_PICK
         : (pickOptions.find(o => o.label === pickForm.pick)?.value ?? null)
 
+    // fixture can be a string id (new link) or a populated object (loaded note)
+    const linkedFixture: any = pickForm.fixture
+    const fixtureId = linkedFixture && typeof linkedFixture === 'object' ? linkedFixture._id : (linkedFixture || null)
+    const fixtureLabel = pickForm.fixtureLabel
+        || (linkedFixture && typeof linkedFixture === 'object' ? `${linkedFixture.homeName} vs ${linkedFixture.awayName}` : null)
+    const fixtureLocked = isEditing && (pickForm.pickResult != null || (pickForm.kickOffTime && new Date(pickForm.kickOffTime) < new Date()))
+
     const submitForm = async () => {
-        const form = {
+        const form: any = {
             ...pickForm,
-            kickOffTime: pickForm.kickOffTime ? new Date(pickForm.kickOffTime).toISOString() : new Date()
+            kickOffTime: pickForm.kickOffTime ? new Date(pickForm.kickOffTime).toISOString() : new Date(),
+            fixture: fixtureId,   // normalize object -> id string
+            fixtureId,            // consumed by the API controller
+            fixtureLabel,         // kept for logged-out (localStorage) display
         }
         const session = localStorage.getItem('mgm_access_token')
         setIsSaving(true)
@@ -112,6 +123,19 @@ function MatchForm(props: MatchFormProps) {
                 <h2 className='text-lg font-bold text-foreground'>{isEditing ? 'Update match note' : 'New match note'}</h2>
                 <p className='text-sm text-muted'>{isEditing ? 'Record the result and what you learned.' : 'Lock in your analysis before kickoff.'}</p>
             </div>
+
+            {fixtureLabel &&
+                <div className="flex items-center justify-between gap-2 rounded-lg border border-pitch-200 bg-pitch-50/60 px-3 py-2.5">
+                    <div className="flex min-w-0 items-center gap-2 text-sm">
+                        <Link2 size={15} className="shrink-0 text-pitch-600" />
+                        <span className="truncate"><span className="font-semibold text-ink">Fixture:</span> <span className="text-muted">{fixtureLabel}</span></span>
+                    </div>
+                    {fixtureLocked
+                        ? <span className="flex items-center gap-1 text-[11px] font-medium text-faint"><Lock size={11} /> Locked</span>
+                        : <button type="button" className="shrink-0 text-xs font-semibold text-lose hover:underline" onClick={() => onChange({ fixture: null, fixtureLabel: null })}>Remove</button>
+                    }
+                </div>
+            }
 
             <TextField value={pickForm.title} onChange={(v: string) => onChange({ title: v })}>
                 <Label>Match</Label>

@@ -13,6 +13,7 @@ import Auth from "../auth";
 
 const NAV_LINKS = [
     { href: '/app', label: 'Dashboard' },
+    { href: '/fixtures', label: 'Fixtures' },
     { href: '/feed', label: 'Feed' },
     { href: '/leaderboard', label: 'Leaderboard' },
     { href: '/notes', label: 'My Notes' },

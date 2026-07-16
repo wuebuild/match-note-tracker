@@ -25,5 +25,9 @@ interface MatchNotes {
     user: User | null,
     createdDate: Date | null,
     isSynced: boolean | null,
-    _id: string | null
+    _id: string | null,
+    // optional link to a real fixture (string id when writing, populated object when reading)
+    fixture?: string | Fixture | null,
+    // client-only label for a freshly linked fixture (e.g. "Arsenal vs Chelsea")
+    fixtureLabel?: string | null,
 }
